@@ -18,7 +18,7 @@ class AiModel extends Equatable {
   final String modelAuthorImage;
   final String modelAuthorDescription;
   final String modelAuthorWebsite;
-  AiModel({
+  const AiModel({
     required this.id,
     required this.name,
     required this.description,

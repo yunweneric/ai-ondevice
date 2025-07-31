@@ -49,7 +49,7 @@ void _scanDirectory(Directory directory, List<String> violations) {
 
         // Check if the name follows snake_case convention
         if (!_isSnakeCase(nameWithoutExtension)) {
-          violations.add('${entity.path}');
+          violations.add(entity.path);
         }
       }
     } else if (entity is Directory) {

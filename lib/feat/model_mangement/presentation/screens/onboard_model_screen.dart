@@ -13,7 +13,7 @@ class OnboardModelScreen extends StatefulWidget {
 
 class _OnboardModelScreenState extends State<OnboardModelScreen> {
   List<AiModel> models = [
-    AiModel(
+    const AiModel(
       id: '1',
       name: 'Gemma 7b',
       description: 'A powerful general-purpose AI model for text and reasoning tasks.',
@@ -29,7 +29,7 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
       modelAuthorDescription: 'Google DeepMind is a leading AI research lab.',
       modelAuthorWebsite: 'https://deepmind.google/',
     ),
-    AiModel(
+    const AiModel(
       id: '2',
       name: 'Gemma 3b',
       description: 'An AI model specialized in user experience and interface suggestions.',
@@ -45,7 +45,7 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
       modelAuthorDescription: 'UXAI Labs focuses on AI for user experience.',
       modelAuthorWebsite: 'https://uxai.example.com/',
     ),
-    AiModel(
+    const AiModel(
       id: '3',
       name: 'Vision Lite',
       description: 'A lightweight vision model for image recognition and classification.',
