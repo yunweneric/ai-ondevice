@@ -1,0 +1,95 @@
+name: Release Build
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        default: '1.0.0'
+
+env:
+  FLUTTER_VERSION: '3.29.0'
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-ai-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 90
+
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build-android]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: offline-ai-android-apk
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/app-release.apk
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## Offline AI Release
+            
+            ### What's New
+            - Offline AI model support
+            - Privacy-first design
+            - Modern UI/UX
+            
+            ### Installation
+            1. Download the APK file below
+            2. Enable "Install from unknown sources" in your Android settings
+            3. Install the APK file
+            4. Follow the onboarding process
+            5. Download your first AI model
+            
+            ### Features
+            - 🤖 Offline AI models
+            - 🔒 Privacy-first design
+            - 📱 Android support
+            - 🎨 Modern UI/UX
+            - ⚡ Fast performance
+            
+            ### Support
+            For issues and questions, please visit our [GitHub repository](https://github.com/yunweneric/offline_ai).
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

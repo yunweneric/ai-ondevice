@@ -25,7 +25,7 @@ A Flutter mobile application that allows you to download and use AI models offli
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/offline_ai.git
+   git clone https://github.com/yunweneric/offline_ai.git
    cd offline_ai
    ```
 
@@ -144,7 +144,22 @@ flutter test
 
 # Run widget tests
 flutter test test/widget_test.dart
+
+# Run naming convention tests
+flutter test test/naming_convention_test.dart test/file_naming_convention_test.dart
 ```
+
+### CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and deployment:
+
+- **Pull Request Checks**: Runs tests, code analysis, and builds APK
+- **Release Build**: Creates Android APK when a release is published
+- **Artifacts**: APK builds are available as downloadable artifacts
+
+#### Workflow Files:
+- `.github/workflows/pull-request.yml` - PR checks and APK builds
+- `.github/workflows/release.yml` - Release APK builds
 
 ## 📋 TODO
 
@@ -167,9 +182,9 @@ flutter test test/widget_test.dart
 
 If you encounter any issues or have questions:
 
-1. Check the [Issues](https://github.com/yourusername/offline_ai/issues) page
+1. Check the [Issues](https://github.com/yunweneric/offline_ai/issues) page
 2. Create a new issue with detailed information
-3. Join our [Discussions](https://github.com/yourusername/offline_ai/discussions)
+3. Join our [Discussions](https://github.com/yunweneric/offline_ai/discussions)
 
 ## 🙏 Acknowledgments
 

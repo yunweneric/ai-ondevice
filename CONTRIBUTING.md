@@ -108,10 +108,11 @@ git push origin feature/your-feature-name
 ### Before Submitting
 
 - [ ] Code follows the project's style guidelines
-- [ ] All tests pass
+- [ ] All tests pass (including naming convention tests)
 - [ ] No linting errors
 - [ ] Documentation is updated if needed
 - [ ] UI changes follow the [UI Development Guide](docs/ui.md)
+- [ ] All files follow snake_case naming convention
 
 ### Pull Request Template
 
@@ -173,7 +174,9 @@ lib/feat/feature_name/
 - **BLoCs**: `FeatureNameBloc`, `FeatureNameEvent`, `FeatureNameState`
 - **Services**: `ServiceNameService` (e.g., `DownloadService`)
 - **Repositories**: `RepositoryNameRepository` (e.g., `DownloadRepository`)
-- **Files**: `snake_case.dart` (e.g., `chat_screen.dart`)
+- **Files**: 
+  - Single word: `lowercase.dart` (e.g., `main.dart`, `utils.dart`)
+  - Multi-word: `snake_case.dart` (e.g., `chat_screen.dart`, `model_card.dart`)
 
 #### UI Guidelines
 - Use `AppSizing` utilities for spacing
@@ -200,6 +203,104 @@ getIt.registerSingleton<ThemeBloc>(themeBloc);
 // Usage in widgets
 final downloadService = getIt<DownloadService>();
 final themeBloc = getIt<ThemeBloc>();
+```
+
+### Architecture Patterns
+
+#### Service Repository Pattern
+
+```dart
+// Service Layer
+class DownloadService {
+  final Dio _dio;
+  
+  DownloadService(this._dio);
+  
+  Future<void> downloadModel(String url) async {
+    // Implementation
+  }
+}
+
+// Repository Layer
+class DownloadRepository {
+  final DownloadService _downloadService;
+  
+  DownloadRepository(this._downloadService);
+  
+  Future<void> downloadModel(String url) async {
+    return await _downloadService.downloadModel(url);
+  }
+}
+
+// BLoC Layer
+class DownloadBloc extends Bloc<DownloadEvent, DownloadState> {
+  final DownloadRepository _repository;
+  
+  DownloadBloc(this._repository) : super(DownloadInitial()) {
+    on<DownloadRequested>(_onDownloadRequested);
+  }
+  
+  Future<void> _onDownloadRequested(
+    DownloadRequested event,
+    Emitter<DownloadState> emit,
+  ) async {
+    emit(DownloadLoading());
+    try {
+      await _repository.downloadModel(event.url);
+      emit(DownloadSuccess());
+    } catch (e) {
+      emit(DownloadFailure(e.toString()));
+    }
+  }
+}
+```
+
+#### BLoC Pattern
+
+```dart
+// Event
+abstract class ChatEvent {}
+
+class SendMessage extends ChatEvent {
+  final String message;
+  SendMessage(this.message);
+}
+
+// State
+abstract class ChatState {}
+
+class ChatInitial extends ChatState {}
+class ChatLoading extends ChatState {}
+class ChatSuccess extends ChatState {
+  final List<Message> messages;
+  ChatSuccess(this.messages);
+}
+class ChatError extends ChatState {
+  final String message;
+  ChatError(this.message);
+}
+
+// BLoC
+class ChatBloc extends Bloc<ChatEvent, ChatState> {
+  final ChatRepository _repository;
+  
+  ChatBloc(this._repository) : super(ChatInitial()) {
+    on<SendMessage>(_onSendMessage);
+  }
+  
+  Future<void> _onSendMessage(
+    SendMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    emit(ChatLoading());
+    try {
+      final messages = await _repository.sendMessage(event.message);
+      emit(ChatSuccess(messages));
+    } catch (e) {
+      emit(ChatError(e.toString()));
+    }
+  }
+}
 ```
 
 ## 🐛 Reporting Bugs
@@ -268,6 +369,9 @@ flutter test --coverage
 
 # Run specific test file
 flutter test test/feature_test.dart
+
+# Run naming convention tests
+flutter test test/file_naming_convention_test.dart
 ```
 
 ### Writing Tests
