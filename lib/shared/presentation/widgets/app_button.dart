@@ -49,7 +49,8 @@ class AppButton extends StatelessWidget {
         onPressed: isDisabled || isLoading == true ? () {} : onPressed,
         style: ElevatedButton.styleFrom(
           elevation: isElevated ? null : 0,
-          disabledBackgroundColor: disabledBgColor ?? bgColor?.withValues(alpha: .5),
+          disabledBackgroundColor:
+              disabledBgColor ?? bgColor?.withValues(alpha: .5),
           backgroundColor: bgColor ?? theme.colorScheme.primary,
           surfaceTintColor: bgColor,
           shape: RoundedRectangleBorder(
@@ -65,7 +66,8 @@ class AppButton extends StatelessWidget {
                   child: SizedBox(
                     height: 18.h,
                     width: 18.h,
-                    child: CircularProgressIndicator(color: deleteLoaderColor ?? AppColors.textWhite),
+                    child: CircularProgressIndicator(
+                        color: deleteLoaderColor ?? AppColors.textWhite),
                   ),
                 )
               : Row(

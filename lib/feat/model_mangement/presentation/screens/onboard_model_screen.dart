@@ -16,7 +16,8 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
     const AiModel(
       id: '1',
       name: 'Gemma 7b',
-      description: 'A powerful general-purpose AI model for text and reasoning tasks.',
+      description:
+          'A powerful general-purpose AI model for text and reasoning tasks.',
       image: 'assets/images/gemini.png',
       model: 'gemini-pro.tflite',
       url: 'https://example.com/models/gemini-pro.tflite',
@@ -32,7 +33,8 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
     const AiModel(
       id: '2',
       name: 'Gemma 3b',
-      description: 'An AI model specialized in user experience and interface suggestions.',
+      description:
+          'An AI model specialized in user experience and interface suggestions.',
       image: 'assets/images/uxpilot.png',
       model: 'ux-pilot.tflite',
       url: 'https://example.com/models/ux-pilot.tflite',
@@ -48,7 +50,8 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
     const AiModel(
       id: '3',
       name: 'Vision Lite',
-      description: 'A lightweight vision model for image recognition and classification.',
+      description:
+          'A lightweight vision model for image recognition and classification.',
       image: 'assets/images/visionlite.png',
       model: 'vision-lite.tflite',
       url: 'https://example.com/models/vision-lite.tflite',
@@ -123,7 +126,8 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
                 child: ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: models.length, // Replace with your models list length when available
+                  itemCount: models
+                      .length, // Replace with your models list length when available
                   itemBuilder: (context, index) {
                     return ModelCard(
                       model: models[index],

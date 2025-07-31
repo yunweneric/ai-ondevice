@@ -10,7 +10,8 @@ void main() {
       _scanDirectory(libDirectory, violations);
 
       if (violations.isNotEmpty) {
-        fail('Found ${violations.length} files that do not follow snake_case naming convention:\n'
+        fail(
+            'Found ${violations.length} files that do not follow snake_case naming convention:\n'
             '${violations.join('\n')}\n\n'
             'All Dart files should be named in snake_case format (e.g., my_file.dart, not myFile.dart)');
       }
@@ -23,7 +24,8 @@ void main() {
       _scanDirectory(testDirectory, violations);
 
       if (violations.isNotEmpty) {
-        fail('Found ${violations.length} test files that do not follow snake_case naming convention:\n'
+        fail(
+            'Found ${violations.length} test files that do not follow snake_case naming convention:\n'
             '${violations.join('\n')}\n\n'
             'All test files should be named in snake_case format (e.g., my_test.dart, not myTest.dart)');
       }

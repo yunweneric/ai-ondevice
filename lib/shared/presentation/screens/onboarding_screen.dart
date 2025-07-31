@@ -32,7 +32,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     height: 160.h,
                     decoration: BoxDecoration(
                       color: theme.scaffoldBackgroundColor,
-                      border: Border.all(color: theme.primaryColorDark, width: 8.w),
+                      border:
+                          Border.all(color: theme.primaryColorDark, width: 8.w),
                       borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
@@ -92,7 +93,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       icon: Icons.wifi_off,
                       iconBgColor: AppColors.pinkColor,
                       title: 'Use AI Offline',
-                      description: 'Interact with powerful AI models without needing an internet connection.',
+                      description:
+                          'Interact with powerful AI models without needing an internet connection.',
                     ),
                     AppSizing.kh20Spacer(),
                     _buildFeatureItem(
@@ -100,7 +102,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       icon: Icons.refresh,
                       iconBgColor: AppColors.greenColor,
                       title: 'Seamless Experience',
-                      description: 'Download once, switch models, and continue your work anywhere.',
+                      description:
+                          'Download once, switch models, and continue your work anywhere.',
                     ),
                     AppSizing.kh20Spacer(),
                     _buildFeatureItem(
@@ -108,7 +111,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       icon: Icons.grid_view,
                       iconBgColor: AppColors.pinkColor,
                       title: 'Model Management',
-                      description: 'Easily manage, download, and switch between models in the app.',
+                      description:
+                          'Easily manage, download, and switch between models in the app.',
                     ),
                   ],
                 ),

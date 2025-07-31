@@ -44,7 +44,9 @@ class AppIcon extends StatelessWidget {
       width: size ?? 25.w,
       height: size ?? 25.w,
       // ignore: deprecated_member_use
-      color: shouldColor == true ? color ?? Theme.of(context).primaryColorDark : null,
+      color: shouldColor == true
+          ? color ?? Theme.of(context).primaryColorDark
+          : null,
       placeholderBuilder: (context) {
         return const Center(
           child: CircularProgressIndicator.adaptive(),

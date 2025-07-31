@@ -64,7 +64,8 @@ class AiModel extends Equatable {
       modelVersion: modelVersion ?? this.modelVersion,
       modelAuthor: modelAuthor ?? this.modelAuthor,
       modelAuthorImage: modelAuthorImage ?? this.modelAuthorImage,
-      modelAuthorDescription: modelAuthorDescription ?? this.modelAuthorDescription,
+      modelAuthorDescription:
+          modelAuthorDescription ?? this.modelAuthorDescription,
       modelAuthorWebsite: modelAuthorWebsite ?? this.modelAuthorWebsite,
     );
   }
@@ -109,7 +110,8 @@ class AiModel extends Equatable {
 
   String toJson() => json.encode(toMap());
 
-  factory AiModel.fromJson(String source) => AiModel.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory AiModel.fromJson(String source) =>
+      AiModel.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {

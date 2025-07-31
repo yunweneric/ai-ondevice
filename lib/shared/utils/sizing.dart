@@ -4,9 +4,12 @@ import 'package:offline_ai/shared/shared.dart';
 
 class AppSizing {
   static double width(BuildContext context) => MediaQuery.sizeOf(context).width;
-  static double height(BuildContext context) => MediaQuery.sizeOf(context).height;
-  static double kHPercentage(BuildContext context, double value) => (height(context) * value) / 100;
-  static double kWPercentage(BuildContext context, double value) => (width(context) * value) / 100;
+  static double height(BuildContext context) =>
+      MediaQuery.sizeOf(context).height;
+  static double kHPercentage(BuildContext context, double value) =>
+      (height(context) * value) / 100;
+  static double kWPercentage(BuildContext context, double value) =>
+      (width(context) * value) / 100;
   static BorderRadius radiusMd = BorderRadius.circular(10.r);
   static BorderRadius radiusSm = BorderRadius.circular(5.r);
 

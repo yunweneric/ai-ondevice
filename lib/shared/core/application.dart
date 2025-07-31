@@ -17,10 +17,12 @@ class _ApplicationState extends State<Application> {
   void updateSystemBar() {
     var brightness = MediaQuery.of(context).platformBrightness;
     if (brightness == Brightness.dark) {
-      SystemBar.setStatusBarIconColor(brightness: Brightness.light, context: context);
+      SystemBar.setStatusBarIconColor(
+          brightness: Brightness.light, context: context);
       SystemBar.setNavBarColor(color: AppColors.bgDark, context: context);
     } else {
-      SystemBar.setStatusBarIconColor(brightness: Brightness.dark, context: context);
+      SystemBar.setStatusBarIconColor(
+          brightness: Brightness.dark, context: context);
       SystemBar.setNavBarColor(color: AppColors.bg, context: context);
     }
   }
@@ -64,7 +66,10 @@ class _ApplicationState extends State<Application> {
                           themeMode: state.themeMode,
                           builder: (ctx, child) {
                             return UpgradeAlert(
-                              navigatorKey: getIt.get<GoRouter>().routerDelegate.navigatorKey,
+                              navigatorKey: getIt
+                                  .get<GoRouter>()
+                                  .routerDelegate
+                                  .navigatorKey,
                               child: GestureDetector(
                                 onTap: () => UtilHelper.hideKeyboard(),
                                 child: child,

@@ -11,7 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:offline_ai/shared/shared.dart';
 
 void main() {
-  testWidgets('App should render without crashing', (WidgetTester tester) async {
+  testWidgets('App should render without crashing',
+      (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(
       MaterialApp(
@@ -19,7 +20,9 @@ void main() {
           body: Center(
             child: Text(
               'Offline AI App',
-              style: Theme.of(tester.element(find.byType(Text))).textTheme.headlineMedium,
+              style: Theme.of(tester.element(find.byType(Text)))
+                  .textTheme
+                  .headlineMedium,
             ),
           ),
         ),

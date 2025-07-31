@@ -9,7 +9,11 @@ class NavItem {
   final String iconFilled;
   final int index;
 
-  NavItem({required this.title, required this.icon, required this.index, required this.iconFilled});
+  NavItem(
+      {required this.title,
+      required this.icon,
+      required this.index,
+      required this.iconFilled});
 }
 
 class AppLayout extends StatefulWidget {
@@ -28,10 +32,26 @@ class _AppLayoutState extends State<AppLayout> {
     const ChatScreen(),
   ];
   static List<NavItem> navBar() => [
-        NavItem(title: "Chat", iconFilled: AppIcons.chatFilled, icon: AppIcons.chat, index: 0),
-        NavItem(title: "History", iconFilled: AppIcons.historyFilled, icon: AppIcons.history, index: 1),
-        NavItem(title: "Explore", iconFilled: AppIcons.exploreFilled, icon: AppIcons.explore, index: 2),
-        NavItem(title: "Settings", iconFilled: AppIcons.settingsFilled, icon: AppIcons.settings, index: 3),
+        NavItem(
+            title: "Chat",
+            iconFilled: AppIcons.chatFilled,
+            icon: AppIcons.chat,
+            index: 0),
+        NavItem(
+            title: "History",
+            iconFilled: AppIcons.historyFilled,
+            icon: AppIcons.history,
+            index: 1),
+        NavItem(
+            title: "Explore",
+            iconFilled: AppIcons.exploreFilled,
+            icon: AppIcons.explore,
+            index: 2),
+        NavItem(
+            title: "Settings",
+            iconFilled: AppIcons.settingsFilled,
+            icon: AppIcons.settings,
+            index: 3),
       ];
   final navBloc = getIt.get<BottomNavBarBloc>();
 
@@ -55,7 +75,8 @@ class _AppLayoutState extends State<AppLayout> {
     }
     final theme = Theme.of(context);
 
-    return BlocBuilder<BottomNavBarBloc, BottomNavBarState>(builder: (context, state) {
+    return BlocBuilder<BottomNavBarBloc, BottomNavBarState>(
+        builder: (context, state) {
       final bottomItems = navBar();
 
       return Scaffold(

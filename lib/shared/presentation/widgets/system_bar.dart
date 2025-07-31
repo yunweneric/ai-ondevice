@@ -3,28 +3,37 @@ import 'package:flutter/services.dart';
 
 class SystemBar {
   static hideBottomBar() async {
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top]);
   }
 
   static hideAppBarIcon() async {
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive, overlays: []);
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive,
+        overlays: []);
   }
 
   static showBottomBar() async {
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
   }
 
-  static setNavBarColor({Color? color, Brightness? brightness, required BuildContext context}) {
+  static setNavBarColor(
+      {Color? color, Brightness? brightness, required BuildContext context}) {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
-        systemNavigationBarColor: color ?? Theme.of(context).bottomAppBarTheme.color,
-        systemNavigationBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor:
+            color ?? Theme.of(context).bottomAppBarTheme.color,
+        systemNavigationBarIconBrightness:
+            Theme.of(context).brightness == Brightness.dark
+                ? Brightness.light
+                : Brightness.dark,
       ),
     );
     showBottomBar();
   }
 
-  static setStatusBarIconColor({Brightness? brightness, required BuildContext context}) {
+  static setStatusBarIconColor(
+      {Brightness? brightness, required BuildContext context}) {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarIconBrightness: brightness ?? Theme.of(context).brightness,
@@ -32,7 +41,8 @@ class SystemBar {
     );
   }
 
-  static setStatusBarColor({Color? color, Brightness? brightness, required BuildContext context}) {
+  static setStatusBarColor(
+      {Color? color, Brightness? brightness, required BuildContext context}) {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: color ?? Theme.of(context).bottomAppBarTheme.color,

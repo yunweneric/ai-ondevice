@@ -17,7 +17,8 @@ class AppBlocObserver extends BlocObserver {
   @override
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
-    AppLogger.i('onChange : ${change.nextState.runtimeType} -> ${change.nextState.runtimeType}');
+    AppLogger.i(
+        'onChange : ${change.nextState.runtimeType} -> ${change.nextState.runtimeType}');
   }
 
   @override
@@ -27,7 +28,8 @@ class AppBlocObserver extends BlocObserver {
   }
 }
 
-Future<void> bootstrap(FutureOr<Widget> Function() builder, {required AppEnv env}) async {
+Future<void> bootstrap(FutureOr<Widget> Function() builder,
+    {required AppEnv env}) async {
   AppLogger.init(env);
   AppLogger.i('\n\n---> START NEW SESSION <---');
   // Needs to be called so that we can await for EasyLocalization.ensureInitialized();
@@ -36,8 +38,9 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder, {required AppEnv env
   await EasyLocalization.ensureInitialized();
 
   HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory:
-        kIsWeb ? HydratedStorageDirectory.web : HydratedStorageDirectory((await pp.getTemporaryDirectory()).path),
+    storageDirectory: kIsWeb
+        ? HydratedStorageDirectory.web
+        : HydratedStorageDirectory((await pp.getTemporaryDirectory()).path),
   );
   await AppConfig.instance.init(env: env);
 

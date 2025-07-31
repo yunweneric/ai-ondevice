@@ -87,8 +87,14 @@ class AppTheme {
 
   static InputDecorationTheme lightInputDecoration = InputDecorationTheme(
     contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 2.h),
-    labelStyle: TextStyle(color: AppColors.textGrey, fontSize: 14.sp, fontWeight: FontWeight.w400),
-    hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 14.sp, fontWeight: FontWeight.w400),
+    labelStyle: TextStyle(
+        color: AppColors.textGrey,
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w400),
+    hintStyle: TextStyle(
+        color: AppColors.textGrey,
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w400),
     floatingLabelStyle: TextStyle(color: AppColors.textGrey, fontSize: 12.sp),
     errorStyle: TextStyle(color: AppColors.red, fontSize: 11.sp),
     border: AppSizing.mainBorder(AppColors.bgGray2),
@@ -102,8 +108,14 @@ class AppTheme {
 
   static InputDecorationTheme darkInputDecoration = InputDecorationTheme(
     contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 2.h),
-    labelStyle: TextStyle(color: AppColors.textGrey, fontSize: 14.sp, fontWeight: FontWeight.w400),
-    hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 14.sp, fontWeight: FontWeight.w400),
+    labelStyle: TextStyle(
+        color: AppColors.textGrey,
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w400),
+    hintStyle: TextStyle(
+        color: AppColors.textGrey,
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w400),
     floatingLabelStyle: TextStyle(color: AppColors.textGrey, fontSize: 12.sp),
     errorStyle: TextStyle(color: AppColors.red, fontSize: 11.sp),
     border: AppSizing.mainBorder(AppColors.bgGray3),
@@ -134,7 +146,10 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.bg,
         surfaceTintColor: AppColors.bg,
-        titleTextStyle: GoogleFonts.urbanist(color: AppColors.textBlack, fontWeight: FontWeight.w500, fontSize: 20.sp),
+        titleTextStyle: GoogleFonts.urbanist(
+            color: AppColors.textBlack,
+            fontWeight: FontWeight.w500,
+            fontSize: 20.sp),
         elevation: 0,
         centerTitle: false,
         iconTheme: const IconThemeData(
@@ -145,7 +160,8 @@ class AppTheme {
         style: TextButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 10.w),
           textStyle: lightTextTheme.bodySmall,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -153,7 +169,8 @@ class AppTheme {
           elevation: 0,
           backgroundColor: AppColors.primary,
           padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 10.w),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
           textStyle: lightTextTheme.bodySmall,
         ),
       ),
@@ -214,7 +231,8 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 10.w),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
           textStyle: darkTextTheme.bodySmall,
           iconColor: AppColors.bgGray,
         ),
@@ -222,7 +240,8 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 10.w),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
           backgroundColor: AppColors.primary,
           textStyle: darkTextTheme.bodySmall,
           iconColor: AppColors.bgGray,
