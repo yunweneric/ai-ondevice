@@ -155,20 +155,24 @@ Add screenshots for UI changes.
 ```
 lib/feat/feature_name/
 ├── data/
-│   ├── models/
-│   ├── repositories/
-│   └── services/
+│   ├── models/           # Data models
+│   ├── repositories/     # Repository implementations
+│   └── services/         # API and local services
 ├── domain/
-│   ├── entities/
-│   └── usecases/
+│   ├── entities/         # Domain entities
+│   └── usecases/         # Business logic use cases
 └── presentation/
-    ├── screens/
-    └── widgets/
+    ├── screens/          # UI screens
+    ├── widgets/          # UI widgets
+    └── logic/            # BLoC files (events, states, bloc)
 ```
 
 #### Naming Conventions
 - **Screens**: `ScreenNameScreen` (e.g., `ChatScreen`)
 - **Widgets**: `WidgetName` (e.g., `ModelCard`)
+- **BLoCs**: `FeatureNameBloc`, `FeatureNameEvent`, `FeatureNameState`
+- **Services**: `ServiceNameService` (e.g., `DownloadService`)
+- **Repositories**: `RepositoryNameRepository` (e.g., `DownloadRepository`)
 - **Files**: `snake_case.dart` (e.g., `chat_screen.dart`)
 
 #### UI Guidelines
