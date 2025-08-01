@@ -40,6 +40,7 @@ class SettingsAppearanceSection extends StatelessWidget {
               ),
               onTap: onThemeTap,
             ),
+            AppSizing.kh10Spacer(),
             SettingsCard(
               leading: Icon(
                 Icons.language,

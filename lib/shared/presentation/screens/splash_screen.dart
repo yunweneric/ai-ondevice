@@ -55,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     // Navigate after delay
     Future.delayed(const Duration(seconds: 2), () {
       // ignore: use_build_context_synchronously
-      if (context.mounted) context.go(AppRouteNames.onboardModel);
+      if (context.mounted) context.go(AppRouteNames.onboarding);
     });
   }
 

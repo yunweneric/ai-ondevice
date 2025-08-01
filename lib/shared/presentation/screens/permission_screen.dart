@@ -33,7 +33,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
               );
             }
             if (state.storagePermission) {
-              context.go(AppRouteNames.home);
+              // context.go(AppRouteNames.home);
             }
           },
           builder: (context, state) {

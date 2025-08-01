@@ -37,6 +37,7 @@ class SettingsAboutSection extends StatelessWidget {
           ),
           onTap: onAppVersionTap,
         ),
+        AppSizing.kh10Spacer(),
         SettingsCard(
           leading: Icon(
             Icons.description,
@@ -51,6 +52,7 @@ class SettingsAboutSection extends StatelessWidget {
           ),
           onTap: onPrivacyPolicyTap,
         ),
+        AppSizing.kh10Spacer(),
         SettingsCard(
           leading: Icon(
             Icons.description,
@@ -68,4 +70,4 @@ class SettingsAboutSection extends StatelessWidget {
       ],
     );
   }
-} 
+}

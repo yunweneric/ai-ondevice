@@ -36,6 +36,7 @@ class SettingsNotificationsSection extends StatelessWidget {
             onChanged: onNotificationsChanged,
           ),
         ),
+        AppSizing.kh10Spacer(),
         SettingsCard(
           leading: Icon(
             Icons.download,
@@ -52,4 +53,4 @@ class SettingsNotificationsSection extends StatelessWidget {
       ],
     );
   }
-} 
+}

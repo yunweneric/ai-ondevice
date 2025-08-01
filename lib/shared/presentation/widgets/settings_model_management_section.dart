@@ -33,6 +33,7 @@ class SettingsModelManagementSection extends StatelessWidget {
           ),
           onTap: onManageModelsTap,
         ),
+        AppSizing.kh10Spacer(),
         SettingsCard(
           leading: Icon(
             Icons.cloud_download,
@@ -50,4 +51,4 @@ class SettingsModelManagementSection extends StatelessWidget {
       ],
     );
   }
-} 
+}

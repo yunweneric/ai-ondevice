@@ -35,6 +35,7 @@ class SettingsStorageSection extends StatelessWidget {
           ),
           onTap: onStorageUsageTap,
         ),
+        AppSizing.kh10Spacer(),
         SettingsCard(
           leading: Icon(
             Icons.delete_sweep,
