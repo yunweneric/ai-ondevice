@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:offline_ai/feat/chat/chat.dart';
+import 'package:offline_ai/feat/history/history.dart';
+import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
 
 class NavItem {
@@ -9,11 +11,7 @@ class NavItem {
   final String iconFilled;
   final int index;
 
-  NavItem(
-      {required this.title,
-      required this.icon,
-      required this.index,
-      required this.iconFilled});
+  NavItem({required this.title, required this.icon, required this.index, required this.iconFilled});
 }
 
 class AppLayout extends StatefulWidget {
@@ -27,28 +25,25 @@ class _AppLayoutState extends State<AppLayout> {
   bool _isKeyboardVisible = false;
   final screens = [
     const ChatScreen(),
-    const ChatScreen(),
-    const ChatScreen(),
-    const ChatScreen(),
+    const HistoryScreen(),
+    const ListModelsScreen(),
+    const SettingsScreen(),
   ];
   static List<NavItem> navBar() => [
         NavItem(
-            title: "Chat",
-            iconFilled: AppIcons.chatFilled,
-            icon: AppIcons.chat,
-            index: 0),
+            title: LangUtil.trans("navigation.chat"), iconFilled: AppIcons.chatFilled, icon: AppIcons.chat, index: 0),
         NavItem(
-            title: "History",
+            title: LangUtil.trans("navigation.history"),
             iconFilled: AppIcons.historyFilled,
             icon: AppIcons.history,
             index: 1),
         NavItem(
-            title: "Explore",
+            title: LangUtil.trans("navigation.explore"),
             iconFilled: AppIcons.exploreFilled,
             icon: AppIcons.explore,
             index: 2),
         NavItem(
-            title: "Settings",
+            title: LangUtil.trans("navigation.settings"),
             iconFilled: AppIcons.settingsFilled,
             icon: AppIcons.settings,
             index: 3),
@@ -75,8 +70,7 @@ class _AppLayoutState extends State<AppLayout> {
     }
     final theme = Theme.of(context);
 
-    return BlocBuilder<BottomNavBarBloc, BottomNavBarState>(
-        builder: (context, state) {
+    return BlocBuilder<BottomNavBarBloc, BottomNavBarState>(builder: (context, state) {
       final bottomItems = navBar();
 
       return Scaffold(
@@ -95,12 +89,10 @@ class _AppLayoutState extends State<AppLayout> {
                 duration: const Duration(milliseconds: 500),
                 child: state.activeIndex == item.index
                     ? AppIcon(
-                        shouldColor: true,
                         icon: item.iconFilled,
                         color: theme.primaryColor,
                       )
                     : AppIcon(
-                        shouldColor: true,
                         icon: item.icon,
                         color: theme.primaryColorDark,
                       ),

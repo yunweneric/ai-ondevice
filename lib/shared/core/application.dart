@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
 import 'package:upgrader/upgrader.dart';
 
@@ -17,12 +18,10 @@ class _ApplicationState extends State<Application> {
   void updateSystemBar() {
     var brightness = MediaQuery.of(context).platformBrightness;
     if (brightness == Brightness.dark) {
-      SystemBar.setStatusBarIconColor(
-          brightness: Brightness.light, context: context);
+      SystemBar.setStatusBarIconColor(brightness: Brightness.light, context: context);
       SystemBar.setNavBarColor(color: AppColors.bgDark, context: context);
     } else {
-      SystemBar.setStatusBarIconColor(
-          brightness: Brightness.dark, context: context);
+      SystemBar.setStatusBarIconColor(brightness: Brightness.dark, context: context);
       SystemBar.setNavBarColor(color: AppColors.bg, context: context);
     }
   }
@@ -40,6 +39,8 @@ class _ApplicationState extends State<Application> {
         BlocProvider(create: (_) => getIt.get<ThemeBloc>()),
         BlocProvider(create: (_) => getIt.get<BottomNavBarBloc>()),
         BlocProvider(create: (_) => getIt.get<LanguageBloc>()),
+        BlocProvider(create: (_) => getIt.get<ModelDownloadBloc>()),
+        BlocProvider(create: (_) => getIt.get<PermissionBloc>()..add(const CheckPermissions())),
       ],
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -66,10 +67,7 @@ class _ApplicationState extends State<Application> {
                           themeMode: state.themeMode,
                           builder: (ctx, child) {
                             return UpgradeAlert(
-                              navigatorKey: getIt
-                                  .get<GoRouter>()
-                                  .routerDelegate
-                                  .navigatorKey,
+                              navigatorKey: getIt.get<GoRouter>().routerDelegate.navigatorKey,
                               child: GestureDetector(
                                 onTap: () => UtilHelper.hideKeyboard(),
                                 child: child,

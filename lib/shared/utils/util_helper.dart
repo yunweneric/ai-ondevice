@@ -26,8 +26,7 @@ class UtilHelper {
     return "https://avatar.iran.liara.run/public/$i";
   }
 
-  static Future<File> loadPdfFromAssets(
-      String assetPath, String filename) async {
+  static Future<File> loadPdfFromAssets(String assetPath, String filename) async {
     final byteData = await rootBundle.load(assetPath);
 
     final tempDir = await getTemporaryDirectory();
@@ -55,10 +54,8 @@ class UtilHelper {
         submissionDate.day == dueDate.day;
   }
 
-  static bool isValidSubmissionDate(
-      DateTime createdAt, DateTime submissionDate) {
-    return createdAt.isBefore(submissionDate) ||
-        isSameDay(createdAt, submissionDate);
+  static bool isValidSubmissionDate(DateTime createdAt, DateTime submissionDate) {
+    return createdAt.isBefore(submissionDate) || isSameDay(createdAt, submissionDate);
   }
 
   static Future<double> getFileSizeInKB(File file) async {
@@ -71,11 +68,45 @@ class UtilHelper {
     }
   }
 
+  /// Format bytes to human readable string (KB, MB, GB)
+  static String formatBytes(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    } else if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    } else if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    } else {
+      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
+    }
+  }
+
+  /// Format bytes to human readable string (KB, MB, GB) without space
+  static String formatBytesCompact(int bytes) {
+    if (bytes < 1024) {
+      return '${bytes}B';
+    } else if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)}KB';
+    } else if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+    } else {
+      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
+    }
+  }
+
+  /// Format bytes to GB (legacy function for backward compatibility)
+  static String formatGB(int bytes) {
+    return formatBytes(bytes);
+  }
+
+  /// Format bytes to MB (legacy function for backward compatibility)
+  static String formatFile(int bytes) {
+    return formatBytes(bytes);
+  }
+
   static bool isToday(DateTime date) {
     final now = DateTime.now();
-    return date.year == now.year &&
-        date.month == now.month &&
-        date.day == now.day;
+    return date.year == now.year && date.month == now.month && date.day == now.day;
   }
 
   static bool isThisWeek(DateTime date) {
@@ -110,8 +141,7 @@ class UtilHelper {
           child: builder(context, state),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(
-              opacity:
-                  CurveTween(curve: Curves.easeInOutCirc).animate(animation),
+              opacity: CurveTween(curve: Curves.easeInOutCirc).animate(animation),
               child: child,
             );
           },
@@ -137,9 +167,7 @@ class UtilHelper {
     }
     return string
         .split(' ')
-        .map((word) => word.isNotEmpty
-            ? word[0].toUpperCase() + word.substring(1).toLowerCase()
-            : '')
+        .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : '')
         .join(' ');
   }
 
@@ -156,21 +184,17 @@ class UtilHelper {
   }
 
   static bool isURL(String str) {
-    final pattern = RegExp(
-        r'^(http(s)?:\/\/)?(www\.)?[a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$');
+    final pattern =
+        RegExp(r'^(http(s)?:\/\/)?(www\.)?[a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$');
     return pattern.hasMatch(str);
   }
 
-  static String formatDate(DateTime date,
-      {String? format, required BuildContext context}) {
-    String formattedDate =
-        DateFormat(format ?? 'dd MMMM yyyy', context.locale.languageCode)
-            .format(date);
+  static String formatDate(DateTime date, {String? format, required BuildContext context}) {
+    String formattedDate = DateFormat(format ?? 'dd MMMM yyyy', context.locale.languageCode).format(date);
     return formattedDate;
   }
 
-  static String formatCurrency(double? amount,
-      {String? currency, required BuildContext context}) {
+  static String formatCurrency(double? amount, {String? currency, required BuildContext context}) {
     if (amount == null) return currency == null ? '0' : "0$currency";
     final formatter = NumberFormat("#,##0", context.locale.languageCode);
     try {
@@ -196,8 +220,7 @@ class UtilHelper {
     const String chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
     Random random = Random();
-    final items = List.generate(
-        length - 4, (index) => chars[random.nextInt(chars.length)]);
+    final items = List.generate(length - 4, (index) => chars[random.nextInt(chars.length)]);
     return prefix + items.join();
   }
 

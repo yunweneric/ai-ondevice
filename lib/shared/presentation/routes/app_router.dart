@@ -21,5 +21,9 @@ final appRouter = GoRouter(
       path: AppRouteNames.onboardModel,
       builder: (context, state) => const OnboardModelScreen(),
     ),
+    UtilHelper.buildAnimatedRoute(
+      path: AppRouteNames.permission,
+      builder: (context, state) => const PermissionScreen(),
+    ),
   ],
 );

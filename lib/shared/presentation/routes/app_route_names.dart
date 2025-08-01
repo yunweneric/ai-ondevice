@@ -5,4 +5,5 @@ class AppRouteNames {
   static const String camera = '/camera';
   static const String openPDF = '/open-pdf';
   static const String onboardModel = '/onboard-model';
+  static const String permission = '/permission';
 }

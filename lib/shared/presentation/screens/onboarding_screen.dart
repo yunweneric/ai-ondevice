@@ -17,7 +17,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          padding: AppSizing.kMainPadding(context),
           child: Column(
             children: [
               AppSizing.kh20Spacer(),
@@ -32,12 +32,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     height: 160.h,
                     decoration: BoxDecoration(
                       color: theme.scaffoldBackgroundColor,
-                      border:
-                          Border.all(color: theme.primaryColorDark, width: 8.w),
+                      border: Border.all(color: theme.primaryColorDark, width: 8.w),
                       borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: theme.shadowColor.withValues(alpha: 0.1),
                           blurRadius: 10,
                           offset: const Offset(0, 5),
                         ),
@@ -54,7 +53,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             size: 40.w,
                           ),
                           SizedBox(height: 8.h),
-                          Text('OFFLINE', style: theme.textTheme.displaySmall),
+                          Text(
+                            LangUtil.trans("onboarding.offline"),
+                            style: theme.textTheme.displaySmall,
+                            textAlign: TextAlign.center,
+                          ),
                         ],
                       ),
                     ),
@@ -65,18 +68,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               // Headline
               Text(
-                'AI, Anytime, Anywhere',
-                style: theme.textTheme.displayLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                LangUtil.trans("onboarding.headline"),
+                style: theme.textTheme.displayLarge,
                 textAlign: TextAlign.center,
               ),
 
-              AppSizing.kh10Spacer(),
+              AppSizing.kh20Spacer(),
 
               // Description
               Text(
-                'With this app, you can download AI models like Gemini and UX Pilot directly to your device, and use them offline — no internet needed! Interact with the models anytime, even when you\'re on the go or in low-connectivity areas.',
+                LangUtil.trans("onboarding.description"),
                 style: theme.textTheme.labelMedium,
                 textAlign: TextAlign.center,
               ),
@@ -88,31 +89,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Expanded(
                 child: Column(
                   children: [
-                    _buildFeatureItem(
-                      context,
+                    BuildFeatureItem(
                       icon: Icons.wifi_off,
-                      iconBgColor: AppColors.pinkColor,
-                      title: 'Use AI Offline',
-                      description:
-                          'Interact with powerful AI models without needing an internet connection.',
+                      title: LangUtil.trans("onboarding.use_ai_offline"),
+                      description: LangUtil.trans("onboarding.use_ai_offline_desc"),
                     ),
                     AppSizing.kh20Spacer(),
-                    _buildFeatureItem(
-                      context,
+                    BuildFeatureItem(
                       icon: Icons.refresh,
-                      iconBgColor: AppColors.greenColor,
-                      title: 'Seamless Experience',
-                      description:
-                          'Download once, switch models, and continue your work anywhere.',
+                      title: LangUtil.trans("onboarding.seamless_experience"),
+                      description: LangUtil.trans("onboarding.seamless_experience_desc"),
                     ),
                     AppSizing.kh20Spacer(),
-                    _buildFeatureItem(
-                      context,
+                    BuildFeatureItem(
                       icon: Icons.grid_view,
-                      iconBgColor: AppColors.pinkColor,
-                      title: 'Model Management',
-                      description:
-                          'Easily manage, download, and switch between models in the app.',
+                      title: LangUtil.trans("onboarding.model_management"),
+                      description: LangUtil.trans("onboarding.model_management_desc"),
                     ),
                   ],
                 ),
@@ -122,9 +114,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               // Bottom Button
               AppButton(
                 onPressed: () {
-                  context.go(AppRouteNames.onboardModel);
+                  if (getIt.get<PermissionBloc>().state.allPermissionsGranted) {
+                    context.go(AppRouteNames.onboardModel);
+                  } else {
+                    context.go(AppRouteNames.permission);
+                  }
                 },
-                title: 'Get Started',
+                title: LangUtil.trans("common.get_started"),
               ),
               AppSizing.kh20Spacer(),
             ],
@@ -133,14 +129,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
+}
 
-  Widget _buildFeatureItem(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconBgColor,
-    required String title,
-    required String description,
-  }) {
+class BuildFeatureItem extends StatelessWidget {
+  const BuildFeatureItem({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+  final IconData icon;
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Row(
@@ -149,10 +152,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           width: 48.w,
           height: 48.w,
           decoration: BoxDecoration(
-            color: iconBgColor,
+            color: theme.primaryColor,
             borderRadius: BorderRadius.circular(24.r),
           ),
-          child: Icon(icon, size: 24.w),
+          child: Icon(
+            icon,
+            size: 24.w,
+            color: Colors.white,
+          ),
         ),
         AppSizing.kwSpacer(15.w),
         Expanded(
