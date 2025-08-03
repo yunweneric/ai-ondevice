@@ -1,10 +1,7 @@
 // Data exports
 export 'data/models/ai_model.dart';
 
-// Logic exports
-export 'logic/model_download/model_download_event.dart';
-export 'logic/model_download/model_download_state.dart';
-export 'logic/model_download/model_download_bloc.dart';
+// Logic exports - using download_manager instead
 
 // Screens
 export 'presentation/screens/onboard_model_screen.dart';

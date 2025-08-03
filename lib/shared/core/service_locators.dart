@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:offline_ai/shared/shared.dart';
-import 'package:offline_ai/feat/model_mangement/model_management.dart';
 
 final getIt = GetIt.instance;
 
@@ -15,22 +14,24 @@ class ServiceLocators {
     final options = BaseOptions();
     Dio dioClient = Dio(options)..interceptors.addAll([LoggerInterceptor()]);
     final localNotificationService = LocalNotificationService();
-    final downloadService = DownloadService(dioClient, localNotificationService);
-    final modelDownloadService = ModelDownloadService(dioClient, localNotificationService);
+    final downloadManagerService = DownloadManagerService(localNotificationService);
+    final fileManagementService = FileManagementService();
 
     getIt.registerSingleton<LocalNotificationService>(localNotificationService);
-    getIt.registerSingleton<DownloadService>(downloadService);
-    getIt.registerSingleton<ModelDownloadService>(modelDownloadService);
+    getIt.registerSingleton<DownloadManagerService>(downloadManagerService);
+    getIt.registerSingleton<FileManagementService>(fileManagementService);
 
-    final downloadRepository = DownloadRepository(downloadService);
-    final modelDownloadRepository = ModelDownloadRepository(modelDownloadService);
-    getIt.registerSingleton<DownloadRepository>(downloadRepository);
-    getIt.registerSingleton<ModelDownloadRepository>(modelDownloadRepository);
+    final downloadManagerRepository = DownloadManagerRepository(downloadManagerService);
+    final fileManagementRepository = FileManagementRepository(fileManagementService);
+
+    getIt.registerSingleton<DownloadManagerRepository>(downloadManagerRepository);
+    getIt.registerSingleton<FileManagementRepository>(fileManagementRepository);
 
     final themeBloc = ThemeBloc();
     final languageBloc = LanguageBloc();
     final bottomNavBarBloc = BottomNavBarBloc();
-    final modelDownloadBloc = ModelDownloadBloc(modelDownloadRepository);
+    final downloadManagerBloc = DownloadManagerBloc(downloadManagerRepository);
+    final fileManagementBloc = FileManagementBloc(fileManagementRepository);
     final permissionService = PermissionService();
     final permissionBloc = PermissionBloc(permissionService);
 
@@ -38,7 +39,8 @@ class ServiceLocators {
       ..registerSingleton<ThemeBloc>(themeBloc)
       ..registerSingleton<LanguageBloc>(languageBloc)
       ..registerSingleton<BottomNavBarBloc>(bottomNavBarBloc)
-      ..registerSingleton<ModelDownloadBloc>(modelDownloadBloc)
+      ..registerSingleton<DownloadManagerBloc>(downloadManagerBloc)
+      ..registerSingleton<FileManagementBloc>(fileManagementBloc)
       ..registerSingleton<PermissionService>(permissionService)
       ..registerSingleton<PermissionBloc>(permissionBloc);
 

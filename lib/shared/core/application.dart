@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
 import 'package:upgrader/upgrader.dart';
 
@@ -39,8 +38,9 @@ class _ApplicationState extends State<Application> {
         BlocProvider(create: (_) => getIt.get<ThemeBloc>()),
         BlocProvider(create: (_) => getIt.get<BottomNavBarBloc>()),
         BlocProvider(create: (_) => getIt.get<LanguageBloc>()),
-        BlocProvider(create: (_) => getIt.get<ModelDownloadBloc>()),
+        BlocProvider(create: (_) => getIt.get<DownloadManagerBloc>()),
         BlocProvider(create: (_) => getIt.get<PermissionBloc>()..add(const CheckPermissions())),
+        BlocProvider(create: (_) => getIt.get<FileManagementBloc>()),
       ],
       child: LayoutBuilder(
         builder: (context, constraints) {

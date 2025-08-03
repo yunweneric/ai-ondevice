@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -72,14 +70,6 @@ class AppSheet {
         systemNavigationBarColor: Theme.of(context).scaffoldBackgroundColor,
         systemNavigationBarDividerColor: Colors.transparent,
       ),
-      // overlayStyle: SystemUiOverlayStyle(
-      //   systemNavigationBarColor: Theme.of(context).bottomAppBarTheme.color,
-      //   systemNavigationBarDividerColor: Colors.white,
-      //   systemNavigationBarIconBrightness: Brightness.dark,
-      //   systemNavigationBarContrastEnforced: true,
-      // ),
-      // overlayStyle: SystemUiOverlayStyle.light.copyWith(systemNavigationBarColor: Colors.blue),
-      // useRootNavigator: true,
     );
   }
 
@@ -311,21 +301,165 @@ class AppSheet {
       ),
     );
   }
-  // static showPhotoPicker(BuildContext context) async {
-  // final photos = await UtilHelper.getPhotos();
-  // return simpleBottomSheet(
-  //   context: context,
-  //   height: AppSizing.kHPercentage(context, 50),
-  //   child: Column(
-  //     children: [
-  //       Wrap(
-  //           children: photos.map((photo) {
-  //         return ImageItemWidget(entity: photo, option: option);
-  //       }).toList())
-  //     ],
-  //   ),
-  // );
-  //}
+
+  static showClearCacheSheet(BuildContext context, {required String cacheSize, required VoidCallback onClearCache}) {
+    final theme = Theme.of(context);
+    return AppSheet.simpleBottomSheet(
+      height: AppSizing.kHPercentage(context, 35),
+      context: context,
+      showClose: true,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            LangUtil.trans("dialogs.clear_cache"),
+            style: theme.textTheme.displayMedium,
+          ),
+          AppSizing.kh10Spacer(),
+          Text(
+            LangUtil.trans("dialogs.clear_cache_desc", args: {"cacheSize": cacheSize}),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+            ),
+          ),
+          AppSizing.kh20Spacer(),
+          AppButton(
+            title: LangUtil.trans("dialogs.clear_cache_button"),
+            onPressed: () {
+              onClearCache();
+              context.pop();
+            },
+            type: AppButtonType.danger,
+          ),
+        ],
+      ),
+    );
+  }
+
+  static showAppVersionSheet(BuildContext context, {required String appVersion}) {
+    final theme = Theme.of(context);
+    return AppSheet.simpleBottomSheet(
+      height: AppSizing.kHPercentage(context, 40),
+      context: context,
+      showClose: true,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            LangUtil.trans("dialogs.app_version"),
+            style: theme.textTheme.displayMedium,
+          ),
+          AppSizing.kh10Spacer(),
+          Text(
+            LangUtil.trans("dialogs.app_version_desc"),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+            ),
+          ),
+          AppSizing.kh20Spacer(),
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      LangUtil.trans("dialogs.version_info"),
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      appVersion,
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        color: theme.primaryColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                AppSizing.kh10Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      LangUtil.trans("dialogs.build_number"),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    Text(
+                      "1.0.0+1",
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+                AppSizing.khSpacer(5.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      LangUtil.trans("dialogs.release_date"),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    Text(
+                      "2024-01-15",
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static showDeleteDataSheet(BuildContext context, {required VoidCallback onDeleteData}) {
+    final theme = Theme.of(context);
+    return AppSheet.simpleBottomSheet(
+      height: AppSizing.kHPercentage(context, 35),
+      context: context,
+      showClose: true,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            LangUtil.trans("dialogs.delete_all_data"),
+            style: theme.textTheme.displayMedium,
+          ),
+          AppSizing.kh10Spacer(),
+          Text(
+            LangUtil.trans("dialogs.delete_all_data_desc"),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+            ),
+          ),
+          AppSizing.kh20Spacer(),
+          AppButton(
+            title: LangUtil.trans("dialogs.delete_all_data_button"),
+            onPressed: () {
+              onDeleteData();
+              context.pop();
+            },
+            type: AppButtonType.danger,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class BottomSheetChild extends StatefulWidget {

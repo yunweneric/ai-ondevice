@@ -131,7 +131,17 @@
     "delete_all_data": "Supprimer toutes les données",
     "delete_all_data_desc": "Cela supprimera définitivement toutes vos données, y compris les modèles téléchargés et l'historique des chats. Cette action ne peut pas être annulée.",
     "clear_cache_button": "Vider le cache",
-    "delete_all_data_button": "Supprimer toutes les données"
+    "delete_all_data_button": "Supprimer toutes les données",
+    "app_version": "Version de l'application",
+    "app_version_desc": "Version actuelle de l'application",
+    "version_info": "Informations de version",
+    "build_number": "Numéro de build",
+    "release_date": "Date de sortie",
+    "changelog": "Nouveautés",
+    "confirm_action": "Confirmer l'action",
+    "confirm_clear_cache": "Êtes-vous sûr de vouloir vider le cache ?",
+    "confirm_delete_data": "Êtes-vous sûr de vouloir supprimer toutes les données ?",
+    "this_action_cannot_be_undone": "Cette action ne peut pas être annulée."
   },
   "storage": {
     "storage_overview": "Aperçu du stockage",

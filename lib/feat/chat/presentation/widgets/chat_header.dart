@@ -55,8 +55,7 @@ class ChatHeader extends StatelessWidget {
                     Container(
                       width: 8.w,
                       height: 8.w,
-                      decoration: const BoxDecoration(
-                          color: AppColors.success, shape: BoxShape.circle),
+                      decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle),
                     ),
                     AppSizing.kwSpacer(4.w),
                     Text(
@@ -73,9 +72,7 @@ class ChatHeader extends StatelessWidget {
           Row(
             children: [
               IconButton(
-                onPressed: () {
-                  // Handle refresh
-                },
+                onPressed: () {},
                 icon: Icon(
                   Icons.refresh,
                   color: AppColors.textGrey,
@@ -83,9 +80,7 @@ class ChatHeader extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () {
-                  // Handle settings
-                },
+                onPressed: () => getIt.get<BottomNavBarBloc>().add(UpdateNavbarIndexEvent(newIndex: 3)),
                 icon: Icon(
                   Icons.settings,
                   color: AppColors.textGrey,
@@ -98,4 +93,4 @@ class ChatHeader extends StatelessWidget {
       ),
     );
   }
-} 
+}

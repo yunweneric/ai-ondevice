@@ -20,10 +20,6 @@ class DownloadedModelCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: theme.dividerColor ?? Colors.grey.withValues(alpha: 0.2),
-          width: 1,
-        ),
       ),
       child: Column(
         children: [

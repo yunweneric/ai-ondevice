@@ -69,7 +69,8 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
   void initState() {
     super.initState();
     selectedModel = models[0];
-    getIt.get<ModelDownloadBloc>().add(const LoadModelDownloads());
+    // Load existing downloads and auto-resume interrupted ones
+    getIt.get<DownloadManagerBloc>().add(const LoadDownloads());
   }
 
   @override
@@ -84,7 +85,7 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
 
               // Model Details
               Expanded(
-                child: BlocBuilder<ModelDownloadBloc, ModelDownloadState>(
+                child: BlocBuilder<DownloadManagerBloc, DownloadManagerState>(
                   builder: (context, state) {
                     return ListView.separated(
                       shrinkWrap: true,
@@ -92,10 +93,17 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
                       itemCount: models.length,
                       itemBuilder: (context, index) {
                         final model = models[index];
-                        final isDownloading = state.isModelDownloading(model.id);
-                        final isCompleted = state.isModelDownloadCompleted(model.id);
-                        final isFailed = state.isModelDownloadFailed(model.id);
+
+                        // Check if this model has an existing download
+                        final existingDownload = _getExistingDownload(state, model.id);
+                        final isDownloading = existingDownload?.isActive ?? false;
+                        final isCompleted = existingDownload?.isCompleted ?? false;
+                        final isFailed = existingDownload?.isFailed ?? false;
+                        final isPaused = existingDownload?.status == DownloadStatus.paused;
+
+                        // Get progress information
                         final progress = state.getDownloadProgress(model.id);
+                        final downloadTask = state.getDownloadTask(model.id);
 
                         return ModelCard(
                           model: model,
@@ -103,9 +111,9 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
                           isDownloading: isDownloading,
                           isDownloaded: isCompleted,
                           isFailed: isFailed,
-                          downloadProgress: progress?.progress,
-                          downloadedBytes: progress?.downloadedBytes,
-                          downloadSpeed: progress?.speed,
+                          downloadProgress: progress?.progress ?? downloadTask?.progress ?? 0.0,
+                          downloadedBytes: progress?.downloadedBytes ?? downloadTask?.downloadedBytes ?? 0,
+                          downloadSpeed: progress?.speed ?? 0.0,
                           downloadError: state.getDownloadError(model.id),
                           onTap: () {
                             setState(() => selectedModel = model);
@@ -121,16 +129,17 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
               ),
 
               // Download Button
-              BlocBuilder<ModelDownloadBloc, ModelDownloadState>(
+              BlocBuilder<DownloadManagerBloc, DownloadManagerState>(
                 builder: (context, state) {
-                  final isDownloading = state.isModelDownloading(selectedModel.id);
-                  final isCompleted = state.isModelDownloadCompleted(selectedModel.id);
-                  final isFailed = state.isModelDownloadFailed(selectedModel.id);
+                  final existingDownload = _getExistingDownload(state, selectedModel.id);
+                  final isDownloading = existingDownload?.isActive ?? false;
+                  final isCompleted = existingDownload?.isCompleted ?? false;
+                  final isFailed = existingDownload?.isFailed ?? false;
+                  final isPaused = existingDownload?.status == DownloadStatus.paused;
 
                   String buttonText;
                   VoidCallback? onPressed;
                   AppButtonType buttonType = AppButtonType.primary;
-                  final canResume = state.canResumeModelDownload(selectedModel.id);
 
                   if (isDownloading) {
                     buttonText = 'Cancel Download';
@@ -139,7 +148,7 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
                   } else if (isCompleted) {
                     buttonText = 'Download Complete';
                     onPressed = () => context.go(AppRouteNames.home);
-                  } else if (isFailed || canResume) {
+                  } else if (isFailed || isPaused) {
                     buttonText = isFailed ? 'Retry Download' : 'Resume Download';
                     onPressed = () => _resumeDownload(context, selectedModel.id);
                   } else {
@@ -173,15 +182,50 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
     );
   }
 
+  /// Get existing download for a model
+  DownloadTask? _getExistingDownload(DownloadManagerState state, String modelId) {
+    // Check if there's an existing download for this model
+    final downloads = state.downloads;
+    for (final entry in downloads.entries) {
+      final download = entry.value;
+      // Check if the download is for this model (using model ID in metadata or filename)
+      if (download.metadata?['modelId'] == modelId ||
+          download.fileName.contains(modelId) ||
+          download.fileName.contains(selectedModel.model)) {
+        return download;
+      }
+    }
+    return null;
+  }
+
   void _startDownload(BuildContext context, AiModel model) {
-    getIt.get<ModelDownloadBloc>().add(StartModelDownload(model));
+    // Start download with model metadata
+    getIt.get<DownloadManagerBloc>().add(StartDownload(
+          url: model.url,
+          fileName: model.model,
+          customId: model.id,
+          metadata: {
+            'modelId': model.id,
+            'modelName': model.name,
+            'modelType': model.modelType,
+            'modelSize': model.modelSize,
+          },
+        ));
   }
 
   void _cancelDownload(BuildContext context, String modelId) {
-    getIt.get<ModelDownloadBloc>().add(CancelModelDownload(modelId));
+    // Find the download task ID for this model
+    final downloadTask = _getExistingDownload(getIt.get<DownloadManagerBloc>().state, modelId);
+    if (downloadTask != null) {
+      getIt.get<DownloadManagerBloc>().add(CancelDownload(downloadTask.id));
+    }
   }
 
   void _resumeDownload(BuildContext context, String modelId) {
-    getIt.get<ModelDownloadBloc>().add(ResumeModelDownload(modelId));
+    // Find the download task ID for this model
+    final downloadTask = _getExistingDownload(getIt.get<DownloadManagerBloc>().state, modelId);
+    if (downloadTask != null) {
+      getIt.get<DownloadManagerBloc>().add(ResumeDownload(downloadTask.id));
+    }
   }
 }
