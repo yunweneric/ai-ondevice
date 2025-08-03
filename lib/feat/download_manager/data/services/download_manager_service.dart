@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:isolate';
+import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_downloader/flutter_downloader.dart' hide DownloadTask;
 import 'package:path_provider/path_provider.dart';
 import 'package:offline_ai/shared/shared.dart';
-import 'package:offline_ai/feat/download_manager/data/models/download_task.dart';
-import 'package:offline_ai/feat/download_manager/data/models/download_progress.dart';
+
+ReceivePort _port = ReceivePort();
 
 class DownloadManagerService {
   final LocalNotificationService _notificationService;
@@ -12,130 +15,35 @@ class DownloadManagerService {
   final Map<String, DownloadTask> _downloads = {};
   final Map<String, StreamController<DownloadProgress>> _progressControllers = {};
 
-  DownloadManagerService(this._notificationService) : _permissionService = PermissionService() {
-    AppLogger.i('DownloadManagerService initialized');
-    _initializeDownloader();
-  }
+  DownloadManagerService(this._notificationService) : _permissionService = PermissionService();
 
   /// Initialize flutter_downloader
-  Future<void> _initializeDownloader() async {
+  static Future<void> initializeDownloader({int step = 10}) async {
     try {
+      IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
+      _port.listen((dynamic data) {
+        String id = data[0];
+        DownloadTaskStatus status = DownloadTaskStatus.fromInt(data[1]);
+        int progress = data[2];
+        AppLogger.log('Download progress: $id, $status, $progress');
+      });
+
+      AppLogger.i('=== Initializing FlutterDownloader ===');
+
       await FlutterDownloader.initialize(
         debug: true,
         ignoreSsl: false,
       );
 
-      // Register callback for download events
-      FlutterDownloader.registerCallback(downloadCallback);
+      AppLogger.i('FlutterDownloader.initialize() completed');
 
-      AppLogger.i('FlutterDownloader initialized successfully');
+      // Register callback for download events
+      AppLogger.i('Registering download callback...');
+      FlutterDownloader.registerCallback(downloadCallback, step: step);
+      AppLogger.i('Download callback registered successfully');
     } catch (e) {
       AppLogger.e('Failed to initialize FlutterDownloader: $e');
-    }
-  }
-
-  /// Update download progress based on flutter_downloader events
-  void _updateDownloadProgress(String taskId, DownloadTaskStatus status, int progress) {
-    final downloadTask = _downloads[taskId];
-    if (downloadTask == null) return;
-
-    // Update download status
-    final newStatus = _convertDownloadStatus(status);
-    final updatedTask = downloadTask.copyWith(
-      status: newStatus,
-      downloadedBytes: progress,
-    );
-    _downloads[taskId] = updatedTask;
-
-    // Emit progress if controller exists
-    final controller = _progressControllers[taskId];
-    if (controller != null && !controller.isClosed) {
-      final downloadProgress = DownloadProgress(
-        taskId: taskId,
-        downloadedBytes: progress,
-        totalBytes: downloadTask.totalBytes,
-        progress: downloadTask.totalBytes > 0 ? progress / downloadTask.totalBytes : 0.0,
-        speed: _calculateSpeed(progress),
-        estimatedTimeRemaining: _calculateEstimatedTime(progress, downloadTask.totalBytes),
-        timestamp: DateTime.now(),
-      );
-
-      controller.add(downloadProgress);
-    }
-
-    // Handle completion
-    if (status == DownloadTaskStatus.complete) {
-      _handleDownloadComplete(taskId);
-    } else if (status == DownloadTaskStatus.failed) {
-      _handleDownloadFailed(taskId);
-    }
-  }
-
-  /// Convert flutter_downloader status to our DownloadStatus
-  DownloadStatus _convertDownloadStatus(DownloadTaskStatus status) {
-    switch (status) {
-      case DownloadTaskStatus.undefined:
-        return DownloadStatus.idle;
-      case DownloadTaskStatus.enqueued:
-        return DownloadStatus.downloading;
-      case DownloadTaskStatus.running:
-        return DownloadStatus.downloading;
-      case DownloadTaskStatus.complete:
-        return DownloadStatus.completed;
-      case DownloadTaskStatus.failed:
-        return DownloadStatus.failed;
-      case DownloadTaskStatus.canceled:
-        return DownloadStatus.cancelled;
-      case DownloadTaskStatus.paused:
-        return DownloadStatus.paused;
-    }
-  }
-
-  /// Calculate download speed
-  double _calculateSpeed(int downloadedBytes) {
-    // Simple implementation - in production you'd track speed over time
-    return downloadedBytes.toDouble();
-  }
-
-  /// Calculate estimated time remaining
-  Duration _calculateEstimatedTime(int downloadedBytes, int totalBytes) {
-    final speed = _calculateSpeed(downloadedBytes);
-    if (speed <= 0) return Duration.zero;
-
-    final remainingBytes = totalBytes - downloadedBytes;
-    final seconds = remainingBytes / speed;
-    return Duration(seconds: seconds.toInt());
-  }
-
-  /// Handle download completion
-  void _handleDownloadComplete(String taskId) async {
-    AppLogger.i('Download completed: $taskId');
-
-    final downloadTask = _downloads[taskId];
-    if (downloadTask != null) {
-      _downloads[taskId] = downloadTask.copyWith(
-        status: DownloadStatus.completed,
-        completedAt: DateTime.now(),
-      );
-
-      // Show completion notification
-      await _showCompletionNotification(taskId);
-    }
-  }
-
-  /// Handle download failure
-  void _handleDownloadFailed(String taskId) async {
-    AppLogger.e('Download failed: $taskId');
-
-    final downloadTask = _downloads[taskId];
-    if (downloadTask != null) {
-      _downloads[taskId] = downloadTask.copyWith(
-        status: DownloadStatus.failed,
-        errorMessage: 'Download failed',
-      );
-
-      // Show error notification
-      await _showErrorNotification(taskId, 'Download failed');
+      AppLogger.e('Stack trace: ${StackTrace.current}');
     }
   }
 
@@ -144,6 +52,16 @@ class DownloadManagerService {
 
   /// Get download task by ID
   DownloadTask? getDownloadTask(String id) => _downloads[id];
+
+  /// Get all download IDs for debugging
+  List<String> getDownloadIds() {
+    AppLogger.log('=== Current Download IDs ===');
+    AppLogger.log('Total downloads: ${_downloads.length}');
+    for (final entry in _downloads.entries) {
+      AppLogger.log('ID: ${entry.key}, File: ${entry.value.fileName}, Status: ${entry.value.status}');
+    }
+    return _downloads.keys.toList();
+  }
 
   /// Get progress stream for a download
   Stream<DownloadProgress>? getProgressStream(String id) => _progressControllers[id]?.stream;
@@ -157,20 +75,15 @@ class DownloadManagerService {
   }) async {
     final id = customId ?? _generateId();
 
-    AppLogger.i('Starting download: ID=$id, URL=$url, FileName=$fileName');
-
     // Check permissions
     final permissionsGranted = await _permissionService.requestDownloadPermissions();
     if (!permissionsGranted) {
-      AppLogger.e('Download permissions not granted for download: $id');
       throw Exception('Download permissions not granted');
     }
 
     // Get download directory
     final directory = await getDownloadDirectory();
     final savedDir = directory.path;
-
-    AppLogger.i('Download directory: $savedDir for download: $id');
 
     // Create download task
     final downloadTask = DownloadTask(
@@ -188,8 +101,6 @@ class DownloadManagerService {
     _downloads[id] = downloadTask;
     _progressControllers[id] = StreamController<DownloadProgress>.broadcast();
 
-    AppLogger.i('Download task created: $id, Status: ${downloadTask.status}');
-
     // Start flutter_downloader download
     final taskId = await FlutterDownloader.enqueue(
       url: url,
@@ -200,21 +111,34 @@ class DownloadManagerService {
       openFileFromNotification: false,
     );
 
-    AppLogger.i('FlutterDownloader task created: TaskID=$taskId, DownloadID=$id');
+    if (taskId != null) {
+      AppLogger.i('FlutterDownloader returned task ID: $taskId');
+      AppLogger.i('Original download ID: $id');
 
-    // Update download task with task ID
-    _downloads[id] = downloadTask.copyWith(id: taskId);
+      // Update download task with task ID
+      final updatedTask = downloadTask.copyWith(id: taskId);
+      _downloads[taskId] = updatedTask;
 
-    return downloadTask;
+      // Also store with original ID for backward compatibility
+      _downloads[id] = updatedTask;
+
+      // Store progress controller with FlutterDownloader task ID
+      _progressControllers[taskId] = _progressControllers[id]!;
+      AppLogger.i('Progress controller stored with FlutterDownloader task ID: $taskId');
+
+      AppLogger.i('Download task updated with FlutterDownloader task ID');
+      AppLogger.i('Returning task with ID: $taskId');
+
+      return updatedTask;
+    } else {
+      throw Exception('Failed to create download task');
+    }
   }
 
   /// Resume a paused download
   Future<void> resumeDownload(String id) async {
-    AppLogger.i('Resuming download: $id');
-
     final downloadTask = _downloads[id];
     if (downloadTask == null) {
-      AppLogger.e('Download not found for resume: $id');
       throw Exception('Download not found');
     }
 
@@ -224,21 +148,15 @@ class DownloadManagerService {
       // Update status
       _downloads[id] = downloadTask.copyWith(status: DownloadStatus.downloading);
       _progressControllers[id] = StreamController<DownloadProgress>.broadcast();
-
-      AppLogger.i('Download resumed: $id');
     } catch (e) {
-      AppLogger.e('Failed to resume download: $id, Error: $e');
       throw Exception('Failed to resume download: $e');
     }
   }
 
   /// Pause a download
   Future<void> pauseDownload(String id) async {
-    AppLogger.i('Pausing download: $id');
-
     final downloadTask = _downloads[id];
     if (downloadTask == null) {
-      AppLogger.e('Download not found for pause: $id');
       throw Exception('Download not found');
     }
 
@@ -249,21 +167,15 @@ class DownloadManagerService {
       _downloads[id] = downloadTask.copyWith(status: DownloadStatus.paused);
       _progressControllers[id]?.close();
       _progressControllers.remove(id);
-
-      AppLogger.i('Download paused: $id');
     } catch (e) {
-      AppLogger.e('Failed to pause download: $id, Error: $e');
       throw Exception('Failed to pause download: $e');
     }
   }
 
   /// Cancel a download
   Future<void> cancelDownload(String id) async {
-    AppLogger.i('Cancelling download: $id');
-
     final downloadTask = _downloads[id];
     if (downloadTask == null) {
-      AppLogger.e('Download not found for cancel: $id');
       throw Exception('Download not found');
     }
 
@@ -274,10 +186,7 @@ class DownloadManagerService {
       _downloads[id] = downloadTask.copyWith(status: DownloadStatus.cancelled);
       _progressControllers[id]?.close();
       _progressControllers.remove(id);
-
-      AppLogger.i('Download cancelled: $id');
     } catch (e) {
-      AppLogger.e('Failed to cancel download: $id, Error: $e');
       throw Exception('Failed to cancel download: $e');
     }
   }
@@ -360,6 +269,28 @@ class DownloadManagerService {
     }
   }
 
+  /// Convert status code to DownloadTaskStatus
+  DownloadTaskStatus _convertStatusFromCode(int statusCode) {
+    switch (statusCode) {
+      case 0:
+        return DownloadTaskStatus.undefined;
+      case 1:
+        return DownloadTaskStatus.enqueued;
+      case 2:
+        return DownloadTaskStatus.running;
+      case 3:
+        return DownloadTaskStatus.complete;
+      case 4:
+        return DownloadTaskStatus.failed;
+      case 5:
+        return DownloadTaskStatus.canceled;
+      case 6:
+        return DownloadTaskStatus.paused;
+      default:
+        return DownloadTaskStatus.undefined;
+    }
+  }
+
   /// Generate unique download ID
   String _generateId() {
     final id = DateTime.now().millisecondsSinceEpoch.toString();
@@ -367,54 +298,17 @@ class DownloadManagerService {
     return id;
   }
 
-  /// Show completion notification
-  Future<void> _showCompletionNotification(String id) async {
-    final downloadTask = _downloads[id];
-    if (downloadTask == null) return;
-
-    AppLogger.i('Showing completion notification: $id');
-
-    final notificationsEnabled = await _notificationService.areNotificationsEnabled();
-    if (!notificationsEnabled) {
-      AppLogger.log('Notifications not enabled, skipping completion notification');
-      return;
-    }
-
-    await _notificationService.showDownloadComplete(
-      id: id,
-      title: 'Download Complete',
-      body: '${downloadTask.fileName} has been downloaded successfully',
-    );
-  }
-
-  /// Show error notification
-  Future<void> _showErrorNotification(String id, String error) async {
-    final downloadTask = _downloads[id];
-    if (downloadTask == null) return;
-
-    AppLogger.e('Showing error notification: ID=$id, Error=$error');
-
-    final notificationsEnabled = await _notificationService.areNotificationsEnabled();
-    if (!notificationsEnabled) {
-      AppLogger.log('Notifications not enabled, skipping error notification');
-      return;
-    }
-
-    await _notificationService.showDownloadError(
-      id: id,
-      title: 'Download Failed',
-      body: 'Failed to download ${downloadTask.fileName}',
-    );
-  }
-
   /// Dispose resources
   void dispose() {
     AppLogger.i('Disposing DownloadManagerService');
 
+    // Close all progress controllers
     for (final controller in _progressControllers.values) {
       controller.close();
     }
     _progressControllers.clear();
+    IsolateNameServer.removePortNameMapping('downloader_send_port');
+    _port.close();
 
     AppLogger.i('DownloadManagerService disposed');
   }
@@ -424,6 +318,56 @@ class DownloadManagerService {
 @pragma('vm:entry-point')
 void downloadCallback(String id, int status, int progress) {
   // This callback runs in a background isolate
-  // For now, we'll handle progress updates through polling
-  AppLogger.log('Download callback: ID=$id, Status=$status, Progress=$progress');
+  // Send progress to main isolate via IsolateNameServer
+
+  AppLogger.log('🔥🔥🔥 CALLBACK CALLED! 🔥🔥🔥');
+  AppLogger.log('=== Download Callback (Background Isolate) ===');
+  AppLogger.log('Task ID: $id');
+  AppLogger.log('Status: $status');
+  AppLogger.log('Progress: $progress bytes');
+
+  // Convert status to readable format
+  String statusText;
+  switch (status) {
+    case 0:
+      statusText = 'undefined';
+      break;
+    case 1:
+      statusText = 'enqueued';
+      break;
+    case 2:
+      statusText = 'running';
+      break;
+    case 3:
+      statusText = 'complete';
+      break;
+    case 4:
+      statusText = 'failed';
+      break;
+    case 5:
+      statusText = 'canceled';
+      break;
+    case 6:
+      statusText = 'paused';
+      break;
+    default:
+      statusText = 'unknown';
+  }
+
+  AppLogger.log('Status Text: $statusText');
+
+  // Send progress to main isolate via IsolateNameServer
+  try {
+    final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
+    if (send != null) {
+      send.send([id, status, progress]);
+      AppLogger.log('Progress sent to main isolate: $id, $status, $progress');
+    } else {
+      AppLogger.log('SendPort not found, progress not sent: $id, $status, $progress');
+    }
+  } catch (e) {
+    AppLogger.log('Error sending progress to main isolate: $e');
+  }
+
+  AppLogger.log('=== End Download Callback ===');
 }

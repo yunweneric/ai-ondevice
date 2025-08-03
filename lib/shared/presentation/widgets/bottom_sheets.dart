@@ -128,7 +128,7 @@ class AppSheet {
     final theme = Theme.of(context);
     final themeBloc = getIt.get<ThemeBloc>();
     return AppSheet.simpleBottomSheet(
-      height: AppSizing.kHPercentage(context, 35),
+      height: AppSizing.kHPercentage(context, 40),
       context: context,
       showClose: true,
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
@@ -145,70 +145,43 @@ class AppSheet {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(LangUtil.trans("profile.change_theme"), style: theme.textTheme.displayMedium),
-              Divider(height: 30.h),
-              TextButton.icon(
-                style: TextButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  fixedSize: Size.fromWidth(AppSizing.width(context)),
-                ),
-                onPressed: () {
-                  themeBloc.add(ChangeThemeEvent(themeMode: ThemeMode.light));
-                },
-                label: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        LangUtil.trans("profile.light_theme"),
-                        style: theme.textTheme.displaySmall?.copyWith(color: theme.primaryColorDark),
-                      ),
-                    ),
-                    AppCheckbox(isActive: appTheme == ThemeMode.light)
-                  ],
-                ),
-                icon: Icon(Icons.sunny, color: theme.primaryColorDark),
+              Text(
+                LangUtil.trans("profile.change_theme"),
+                style: theme.textTheme.displayMedium,
               ),
-              TextButton.icon(
-                style: TextButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  fixedSize: Size.fromWidth(AppSizing.width(context)),
+              AppSizing.kh10Spacer(),
+              Text(
+                LangUtil.trans("profile.switch_themes"),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                 ),
-                onPressed: () {
-                  themeBloc.add(ChangeThemeEvent(themeMode: ThemeMode.dark));
-                },
-                label: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        LangUtil.trans("profile.dark_theme"),
-                        style: theme.textTheme.displaySmall,
-                      ),
-                    ),
-                    AppCheckbox(isActive: appTheme == ThemeMode.dark)
-                  ],
-                ),
-                icon: Icon(Icons.dark_mode_rounded, color: theme.primaryColorDark),
               ),
-              TextButton.icon(
-                style: TextButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  fixedSize: Size.fromWidth(AppSizing.width(context)),
-                ),
-                onPressed: () {
-                  themeBloc.add(ChangeThemeEvent(themeMode: ThemeMode.system));
-                },
-                label: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        LangUtil.trans("profile.system_theme"),
-                        style: theme.textTheme.displaySmall,
-                      ),
-                    ),
-                    AppCheckbox(isActive: appTheme == ThemeMode.system)
-                  ],
-                ),
-                icon: Icon(Icons.phone_android_rounded, color: theme.primaryColorDark),
+              AppSizing.kh20Spacer(),
+              _buildThemeOption(
+                context,
+                theme,
+                icon: Icons.sunny,
+                title: LangUtil.trans("profile.light_theme"),
+                isSelected: appTheme == ThemeMode.light,
+                onTap: () => themeBloc.add(ChangeThemeEvent(themeMode: ThemeMode.light)),
+              ),
+              AppSizing.kh10Spacer(),
+              _buildThemeOption(
+                context,
+                theme,
+                icon: Icons.dark_mode_rounded,
+                title: LangUtil.trans("profile.dark_theme"),
+                isSelected: appTheme == ThemeMode.dark,
+                onTap: () => themeBloc.add(ChangeThemeEvent(themeMode: ThemeMode.dark)),
+              ),
+              AppSizing.kh10Spacer(),
+              _buildThemeOption(
+                context,
+                theme,
+                icon: Icons.phone_android_rounded,
+                title: LangUtil.trans("profile.system_theme"),
+                isSelected: appTheme == ThemeMode.system,
+                onTap: () => themeBloc.add(ChangeThemeEvent(themeMode: ThemeMode.system)),
               ),
             ],
           );
@@ -217,11 +190,62 @@ class AppSheet {
     );
   }
 
+  static Widget _buildThemeOption(
+    BuildContext context,
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.primaryColor.withValues(alpha: 0.1) : theme.cardColor,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: isSelected ? theme.primaryColor : theme.dividerColor,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: isSelected ? theme.primaryColor : theme.dividerColor.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(
+                icon,
+                color: !isSelected ? theme.primaryColor : theme.textTheme.bodyMedium?.color,
+                size: 20.w,
+              ),
+            ),
+            AppSizing.kwSpacer(12.w),
+            Expanded(
+              child: Text(
+                title,
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? theme.primaryColor : theme.textTheme.displaySmall?.color,
+                ),
+              ),
+            ),
+            if (isSelected) AppCheckbox(isActive: isSelected)
+          ],
+        ),
+      ),
+    );
+  }
+
   static showChangeLanguageSheet(BuildContext context) {
     final theme = Theme.of(context);
     final languageBloc = getIt.get<LanguageBloc>();
     return AppSheet.simpleBottomSheet(
-      height: AppSizing.kHPercentage(context, 30),
+      height: AppSizing.kHPercentage(context, 35),
       context: context,
       showClose: true,
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
@@ -234,70 +258,118 @@ class AppSheet {
           }
         },
         builder: (context, state) {
-          final currentLocale = state.currentLocale;
-          AppLogger.i(currentLocale.countryCode);
-          AppLogger.i(currentLocale.languageCode);
           bool isFrench = LangUtil.isFrench(context);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(LangUtil.trans("profile.change_language"), style: theme.textTheme.displayMedium),
-              Divider(height: 30.h),
-              TextButton.icon(
-                style: TextButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  fixedSize: Size.fromWidth(AppSizing.width(context)),
-                ),
-                onPressed: () {
-                  languageBloc.add(
-                    UpdateAppLanguageEvent(
-                      context: context,
-                      newLocale: const Locale('fr'),
-                    ),
-                  );
-                },
-                label: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        LangUtil.trans("profile.french"),
-                        style: theme.textTheme.displaySmall?.copyWith(color: theme.primaryColorDark),
-                      ),
-                    ),
-                    AppCheckbox(isActive: isFrench)
-                  ],
-                ),
-                // icon: Icon(Icons.sunny, color: theme.primaryColorDark),
+              Text(
+                LangUtil.trans("profile.change_language"),
+                style: theme.textTheme.displayMedium,
               ),
-              TextButton.icon(
-                style: TextButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  fixedSize: Size.fromWidth(AppSizing.width(context)),
+              AppSizing.kh10Spacer(),
+              Text(
+                LangUtil.trans("profile.select_language"),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                 ),
-                onPressed: () {
-                  languageBloc.add(
-                    UpdateAppLanguageEvent(
-                      context: context,
-                      newLocale: const Locale('en'),
-                    ),
-                  );
-                },
-                label: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        LangUtil.trans("profile.english"),
-                        style: theme.textTheme.displaySmall,
-                      ),
-                    ),
-                    AppCheckbox(isActive: !isFrench)
-                  ],
+              ),
+              AppSizing.kh20Spacer(),
+              _buildLanguageOption(
+                context,
+                theme,
+                icon: Icons.flag,
+                title: LangUtil.trans("profile.english"),
+                subtitle: "English",
+                isSelected: !isFrench,
+                onTap: () => languageBloc.add(
+                  UpdateAppLanguageEvent(
+                    context: context,
+                    newLocale: const Locale('en'),
+                  ),
                 ),
-                // icon: Icon(Icons.dark_mode_rounded, color: theme.primaryColorDark),
+              ),
+              AppSizing.kh10Spacer(),
+              _buildLanguageOption(
+                context,
+                theme,
+                icon: Icons.flag,
+                title: LangUtil.trans("profile.french"),
+                subtitle: "Français",
+                isSelected: isFrench,
+                onTap: () => languageBloc.add(
+                  UpdateAppLanguageEvent(
+                    context: context,
+                    newLocale: const Locale('fr'),
+                  ),
+                ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  static Widget _buildLanguageOption(
+    BuildContext context,
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.primaryColor.withValues(alpha: 0.1) : theme.cardColor,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: isSelected ? theme.primaryColor : theme.dividerColor,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: isSelected ? theme.primaryColor : theme.dividerColor.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(
+                icon,
+                color: !isSelected ? theme.primaryColor : theme.textTheme.bodyMedium?.color,
+                size: 20.w,
+              ),
+            ),
+            AppSizing.kwSpacer(12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: isSelected ? theme.primaryColor : theme.textTheme.displaySmall?.color,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected) AppCheckbox(isActive: isSelected)
+          ],
+        ),
       ),
     );
   }

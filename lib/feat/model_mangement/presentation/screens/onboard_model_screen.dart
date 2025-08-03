@@ -96,14 +96,14 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
 
                         // Check if this model has an existing download
                         final existingDownload = _getExistingDownload(state, model.id);
+                        final downloadTaskId = _getDownloadTaskId(state, model.id);
                         final isDownloading = existingDownload?.isActive ?? false;
                         final isCompleted = existingDownload?.isCompleted ?? false;
                         final isFailed = existingDownload?.isFailed ?? false;
-                        final isPaused = existingDownload?.status == DownloadStatus.paused;
 
-                        // Get progress information
-                        final progress = state.getDownloadProgress(model.id);
-                        final downloadTask = state.getDownloadTask(model.id);
+                        // Get progress information using the correct download task ID
+                        final progress = downloadTaskId != null ? state.getDownloadProgress(downloadTaskId) : null;
+                        final downloadTask = downloadTaskId != null ? state.getDownloadTask(downloadTaskId) : null;
 
                         return ModelCard(
                           model: model,
@@ -114,7 +114,7 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
                           downloadProgress: progress?.progress ?? downloadTask?.progress ?? 0.0,
                           downloadedBytes: progress?.downloadedBytes ?? downloadTask?.downloadedBytes ?? 0,
                           downloadSpeed: progress?.speed ?? 0.0,
-                          downloadError: state.getDownloadError(model.id),
+                          downloadError: downloadTaskId != null ? state.getDownloadError(downloadTaskId) : null,
                           onTap: () {
                             setState(() => selectedModel = model);
                           },
@@ -189,10 +189,20 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
     for (final entry in downloads.entries) {
       final download = entry.value;
       // Check if the download is for this model (using model ID in metadata or filename)
-      if (download.metadata?['modelId'] == modelId ||
-          download.fileName.contains(modelId) ||
-          download.fileName.contains(selectedModel.model)) {
+      if (download.metadata?['modelId'] == modelId || download.fileName.contains(modelId)) {
         return download;
+      }
+    }
+    return null;
+  }
+
+  /// Get download task ID for a model
+  String? _getDownloadTaskId(DownloadManagerState state, String modelId) {
+    final downloads = state.downloads;
+    for (final entry in downloads.entries) {
+      final download = entry.value;
+      if (download.metadata?['modelId'] == modelId || download.fileName.contains(modelId)) {
+        return entry.key; // Return the download task ID
       }
     }
     return null;
@@ -215,17 +225,17 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
 
   void _cancelDownload(BuildContext context, String modelId) {
     // Find the download task ID for this model
-    final downloadTask = _getExistingDownload(getIt.get<DownloadManagerBloc>().state, modelId);
-    if (downloadTask != null) {
-      getIt.get<DownloadManagerBloc>().add(CancelDownload(downloadTask.id));
+    final downloadTaskId = _getDownloadTaskId(getIt.get<DownloadManagerBloc>().state, modelId);
+    if (downloadTaskId != null) {
+      getIt.get<DownloadManagerBloc>().add(CancelDownload(downloadTaskId));
     }
   }
 
   void _resumeDownload(BuildContext context, String modelId) {
     // Find the download task ID for this model
-    final downloadTask = _getExistingDownload(getIt.get<DownloadManagerBloc>().state, modelId);
-    if (downloadTask != null) {
-      getIt.get<DownloadManagerBloc>().add(ResumeDownload(downloadTask.id));
+    final downloadTaskId = _getDownloadTaskId(getIt.get<DownloadManagerBloc>().state, modelId);
+    if (downloadTaskId != null) {
+      getIt.get<DownloadManagerBloc>().add(ResumeDownload(downloadTaskId));
     }
   }
 }

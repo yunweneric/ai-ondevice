@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:offline_ai/shared/shared.dart';
 import 'package:offline_ai/feat/download_manager/download_manager.dart';
 
@@ -8,6 +10,14 @@ void main() {
     late DownloadManagerRepository repository;
     late DownloadManagerBloc bloc;
     late LocalNotificationService notificationService;
+
+    setUpAll(() async {
+      // Initialize HydratedBloc storage for testing
+      final tempDir = await Directory.systemTemp.createTemp('test_storage');
+      HydratedBloc.storage = await HydratedStorage.build(
+        storageDirectory: HydratedStorageDirectory(tempDir.path),
+      );
+    });
 
     setUp(() {
       notificationService = LocalNotificationService();

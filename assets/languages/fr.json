@@ -5,6 +5,7 @@
     "dark_theme": "Thème sombre",
     "system_theme": "Thème système",
     "change_language": "Changer de langue",
+    "select_language": "Sélectionnez votre langue préférée",
     "english": "Anglais",
     "french": "Français",
     "spanish": "Espagnol",
@@ -182,5 +183,17 @@
     "continue": "Continuer",
     "open_app_settings": "Ouvrir les paramètres de l'application",
     "error_message": "Une erreur s'est produite"
+  },
+  "webview": {
+    "loading": "Chargement...",
+    "error_title": "Échec du chargement",
+    "error_message": "Impossible de charger la page. Veuillez vérifier votre connexion internet et réessayer.",
+    "retry": "Réessayer"
+  },
+  "privacy_policy": {
+    "title": "Politique de confidentialité"
+  },
+  "terms_of_service": {
+    "title": "Conditions d'utilisation"
   }
 }

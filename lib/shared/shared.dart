@@ -71,6 +71,11 @@ export 'presentation/widgets/app_checkbox.dart';
 export 'presentation/widgets/bottom_sheets.dart';
 export 'presentation/widgets/storage_info_widget.dart';
 export 'presentation/widgets/storage_overview_shimmer.dart';
+export 'presentation/widgets/webview_widget.dart';
+
+// screens
+export 'presentation/screens/privacy_policy_screen.dart';
+export 'presentation/screens/terms_of_service_screen.dart';
 
 // enums
 export 'data/enums/permissions_status.dart';

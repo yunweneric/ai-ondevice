@@ -47,10 +47,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.smart_toy,
-                            color: theme.primaryColor,
+                          AppIcon(
+                            icon: AppIcons.robotHead,
                             size: 40.w,
+                            color: theme.primaryColor,
                           ),
                           SizedBox(height: 8.h),
                           Text(

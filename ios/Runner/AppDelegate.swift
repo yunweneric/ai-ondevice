@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import flutter_downloader
 
+// @main
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(

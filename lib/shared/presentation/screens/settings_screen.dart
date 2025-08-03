@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:offline_ai/shared/shared.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -98,10 +99,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _showAppVersionSheet();
             },
             onPrivacyPolicyTap: () {
-              // Navigate to privacy policy
+              context.push(AppRouteNames.privacyPolicy);
             },
             onTermsOfServiceTap: () {
-              // Navigate to terms of service
+              context.push(AppRouteNames.termsOfService);
             },
           ),
 

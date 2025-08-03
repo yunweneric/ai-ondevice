@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:equatable/equatable.dart';
 
 class DownloadProgress extends Equatable {
@@ -38,6 +39,34 @@ class DownloadProgress extends Equatable {
       timestamp: timestamp ?? this.timestamp,
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'taskId': taskId,
+      'downloadedBytes': downloadedBytes,
+      'totalBytes': totalBytes,
+      'progress': progress,
+      'speed': speed,
+      'estimatedTimeRemaining': estimatedTimeRemaining.inMilliseconds,
+      'timestamp': timestamp.millisecondsSinceEpoch,
+    };
+  }
+
+  factory DownloadProgress.fromMap(Map<String, dynamic> map) {
+    return DownloadProgress(
+      taskId: map['taskId'] as String,
+      downloadedBytes: map['downloadedBytes'] as int,
+      totalBytes: map['totalBytes'] as int,
+      progress: map['progress'] as double,
+      speed: map['speed'] as double,
+      estimatedTimeRemaining: Duration(milliseconds: map['estimatedTimeRemaining'] as int),
+      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory DownloadProgress.fromJson(String source) => DownloadProgress.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
