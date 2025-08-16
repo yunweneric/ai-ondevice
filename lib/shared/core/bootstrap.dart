@@ -36,8 +36,9 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder, {required AppEnv env
   await EasyLocalization.ensureInitialized();
 
   HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory:
-        kIsWeb ? HydratedStorageDirectory.web : HydratedStorageDirectory((await pp.getTemporaryDirectory()).path),
+    storageDirectory: kIsWeb
+        ? HydratedStorageDirectory.web
+        : HydratedStorageDirectory((await pp.getTemporaryDirectory()).path),
   );
   await AppConfig.instance.init(env: env);
 
@@ -54,7 +55,11 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder, {required AppEnv env
 
   // * Init local notifications!
   await LocalNotificationService().init();
-  await DownloadManagerService.initializeDownloader();
+
+  // Initialize background downloader BEFORE the app starts
+  AppLogger.i('=== Initializing Background Downloader in Bootstrap ===');
+  await getIt.get<DownloadManagerService>().initializeDownloader();
+  AppLogger.i('=== Background Downloader Initialized in Bootstrap ===');
 
   runApp(
     UpgradeAlert(

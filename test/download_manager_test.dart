@@ -9,9 +9,11 @@ void main() {
     late DownloadManagerService service;
     late DownloadManagerRepository repository;
     late DownloadManagerBloc bloc;
-    late LocalNotificationService notificationService;
 
     setUpAll(() async {
+      // Initialize Flutter binding for background_downloader
+      TestWidgetsFlutterBinding.ensureInitialized();
+
       // Initialize HydratedBloc storage for testing
       final tempDir = await Directory.systemTemp.createTemp('test_storage');
       HydratedBloc.storage = await HydratedStorage.build(
@@ -20,10 +22,9 @@ void main() {
     });
 
     setUp(() {
-      notificationService = LocalNotificationService();
-      service = DownloadManagerService(notificationService);
+      service = DownloadManagerService();
       repository = DownloadManagerRepository(service);
-      bloc = DownloadManagerBloc(repository);
+      bloc = DownloadManagerBloc();
     });
 
     tearDown(() {
@@ -102,20 +103,22 @@ void main() {
       expect(repository.getFormattedTimeRemaining(veryShortDuration), '45s');
     });
 
-    test('should handle download task info correctly', () {
+    test('should handle download task info correctly', () async {
       // Test that we can get download task info (should be null initially)
-      expect(repository.getDownloadTask('non-existent'), isNull);
+      final task = await repository.getDownloadTask('non-existent');
+      expect(task, isNull);
 
       // Test that we can get all downloads (should be empty initially)
-      expect(repository.getDownloads(), isEmpty);
+      final downloads = await repository.getDownloads();
+      expect(downloads, isEmpty);
     });
 
-    test('should check download status correctly', () {
+    test('should check download status correctly', () async {
       // Test status checks for non-existent download
-      expect(repository.isDownloadActive('non-existent'), isFalse);
-      expect(repository.isDownloadCompleted('non-existent'), isFalse);
-      expect(repository.isDownloadFailed('non-existent'), isFalse);
-      expect(repository.isDownloadCancelled('non-existent'), isFalse);
+      expect(await repository.isDownloadActive('non-existent'), isFalse);
+      expect(await repository.isDownloadCompleted('non-existent'), isFalse);
+      expect(await repository.isDownloadFailed('non-existent'), isFalse);
+      expect(await repository.isDownloadCancelled('non-existent'), isFalse);
     });
 
     test('should handle bloc events correctly', () {

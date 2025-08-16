@@ -14,7 +14,7 @@ class ServiceLocators {
     final options = BaseOptions();
     Dio dioClient = Dio(options)..interceptors.addAll([LoggerInterceptor()]);
     final localNotificationService = LocalNotificationService();
-    final downloadManagerService = DownloadManagerService(localNotificationService);
+    final downloadManagerService = DownloadManagerService();
     final fileManagementService = FileManagementService();
 
     getIt.registerSingleton<LocalNotificationService>(localNotificationService);
@@ -30,7 +30,7 @@ class ServiceLocators {
     final themeBloc = ThemeBloc();
     final languageBloc = LanguageBloc();
     final bottomNavBarBloc = BottomNavBarBloc();
-    final downloadManagerBloc = DownloadManagerBloc(downloadManagerRepository);
+    final downloadManagerBloc = DownloadManagerBloc();
     final fileManagementBloc = FileManagementBloc(fileManagementRepository);
     final permissionService = PermissionService();
     final permissionBloc = PermissionBloc(permissionService);
