@@ -30,7 +30,15 @@ class DownloadManagerRepository {
 
   /// Auto-resume downloads that were interrupted
   Future<void> autoResumeDownloads() async {
-    await _downloadManagerService.autoResumeDownloads();
+    // Get all paused downloads and resume them
+    final pausedDownloads = _downloadManagerService.getDownloadsByStatus(DownloadStatus.paused);
+    for (final download in pausedDownloads) {
+      try {
+        await _downloadManagerService.resumeDownload(download.id);
+      } catch (e) {
+        AppLogger.e('Failed to auto-resume download ${download.id}: $e');
+      }
+    }
   }
 
   /// Pause a download
@@ -44,8 +52,8 @@ class DownloadManagerRepository {
   }
 
   /// Get download task by ID
-  Future<DownloadTask?> getDownloadTask(String id) async {
-    return await _downloadManagerService.getDownloadTask(id);
+  DownloadTask? getDownloadTask(String id) {
+    return _downloadManagerService.getDownloadTask(id);
   }
 
   /// Get progress stream for a download
@@ -54,32 +62,37 @@ class DownloadManagerRepository {
   }
 
   /// Check if download is active
-  Future<bool> isDownloadActive(String id) async {
-    final task = await getDownloadTask(id);
+  bool isDownloadActive(String id) {
+    final task = getDownloadTask(id);
     return task?.isActive ?? false;
   }
 
   /// Check if download is completed
-  Future<bool> isDownloadCompleted(String id) async {
-    final task = await getDownloadTask(id);
+  bool isDownloadCompleted(String id) {
+    final task = getDownloadTask(id);
     return task?.isCompleted ?? false;
   }
 
   /// Check if download failed
-  Future<bool> isDownloadFailed(String id) async {
-    final task = await getDownloadTask(id);
+  bool isDownloadFailed(String id) {
+    final task = getDownloadTask(id);
     return task?.isFailed ?? false;
   }
 
   /// Check if download is cancelled
-  Future<bool> isDownloadCancelled(String id) async {
-    final task = await getDownloadTask(id);
+  bool isDownloadCancelled(String id) {
+    final task = getDownloadTask(id);
     return task?.isCancelled ?? false;
   }
 
   /// Get all downloads
   Future<Map<String, DownloadTask>> getDownloads() async {
-    return await _downloadManagerService.downloads;
+    final downloads = _downloadManagerService.downloads;
+    final Map<String, DownloadTask> result = {};
+    for (final download in downloads) {
+      result[download.id] = download;
+    }
+    return result;
   }
 
   /// Delete a completed download
@@ -88,14 +101,14 @@ class DownloadManagerRepository {
   }
 
   /// Get download file path
-  Future<String?> getDownloadFilePath(String id) async {
-    final task = await getDownloadTask(id);
+  String? getDownloadFilePath(String id) {
+    final task = getDownloadTask(id);
     return task?.filePath;
   }
 
   /// Check if download file exists
   Future<bool> isDownloadFileExists(String id) async {
-    final filePath = await getDownloadFilePath(id);
+    final filePath = getDownloadFilePath(id);
     if (filePath == null) return false;
 
     final file = File(filePath);
@@ -104,7 +117,7 @@ class DownloadManagerRepository {
 
   /// Get download file size
   Future<int?> getDownloadFileSize(String id) async {
-    final filePath = await getDownloadFilePath(id);
+    final filePath = getDownloadFilePath(id);
     if (filePath == null) return null;
 
     final file = File(filePath);
@@ -122,8 +135,8 @@ class DownloadManagerRepository {
   }
 
   /// Get download speed for a task
-  Future<double> getDownloadSpeed(String id) async {
-    final task = await getDownloadTask(id);
+  double getDownloadSpeed(String id) {
+    final task = getDownloadTask(id);
     if (task == null) return 0.0;
 
     final now = DateTime.now();
@@ -134,11 +147,11 @@ class DownloadManagerRepository {
   }
 
   /// Get estimated time remaining for download
-  Future<Duration> getEstimatedTimeRemaining(String id) async {
-    final task = await getDownloadTask(id);
+  Duration getEstimatedTimeRemaining(String id) {
+    final task = getDownloadTask(id);
     if (task == null) return Duration.zero;
 
-    final speed = await getDownloadSpeed(id);
+    final speed = getDownloadSpeed(id);
     if (speed <= 0) return Duration.zero;
 
     final remainingBytes = task.totalBytes - task.downloadedBytes;
@@ -147,16 +160,16 @@ class DownloadManagerRepository {
   }
 
   /// Get formatted download progress for task
-  Future<String> getDownloadProgressText(String id) async {
-    final task = await getDownloadTask(id);
+  String getDownloadProgressText(String id) {
+    final task = getDownloadTask(id);
     if (task == null) return '0%';
 
     return task.progressText;
   }
 
   /// Get formatted download speed for task
-  Future<String> getDownloadSpeedText(String id) async {
-    final speed = await getDownloadSpeed(id);
+  String getDownloadSpeedText(String id) {
+    final speed = getDownloadSpeed(id);
     if (speed <= 0) return '0 MB/s';
 
     final speedMBps = (speed / 1024 / 1024).toStringAsFixed(2);

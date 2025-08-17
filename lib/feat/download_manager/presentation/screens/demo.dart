@@ -1,16 +1,5 @@
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:offline_ai/shared/logging/logger.dart';
-import 'dart:isolate';
-import 'dart:ui';
-
-@pragma('vm:entry-point')
-void downloadCallback(String id, int status, int progress) {
-  final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
-  send?.send([id, status, progress]);
-}
+import 'package:offline_ai/shared/shared.dart';
 
 class DemoScreen extends StatefulWidget {
   const DemoScreen({super.key});
@@ -20,258 +9,489 @@ class DemoScreen extends StatefulWidget {
 }
 
 class _DemoScreenState extends State<DemoScreen> {
-  double _progress = 0.0;
-  String _status = 'Ready';
-  bool _isDownloading = false;
-  List<String> _queuedTasks = [];
-  ReceivePort _port = ReceivePort();
+  final DownloadManagerService _downloadService = getIt<DownloadManagerService>();
+  final DownloadManagerBloc _downloadBloc = getIt<DownloadManagerBloc>();
+
+  List<DownloadTask> _downloads = [];
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _initDownloader();
+    _initializeDownloadManager();
   }
 
-  @override
-  void dispose() {
-    IsolateNameServer.removePortNameMapping('downloader_send_port');
-    super.dispose();
-  }
-
-  void _initDownloader() async {
+  Future<void> _initializeDownloadManager() async {
     try {
-      AppLogger.i('Initializing flutter_downloader...');
+      AppLogger.i('Initializing download manager demo...');
 
-      // Register the port for communication between isolates
-      IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
-      _port.listen((dynamic data) {
-        String id = data[0];
-        DownloadTaskStatus status = DownloadTaskStatus.fromInt(data[1]);
-        int progress = data[2];
+      // Initialize the download service
+      await _downloadService.initialize();
 
-        AppLogger.i('Download update: Task $id, Status: $status, Progress: $progress%');
+      // Load existing downloads
+      _loadDownloads();
 
-        setState(() {
-          if (status == DownloadTaskStatus.complete) {
-            _status = 'Download completed!';
-            _isDownloading = false;
-            _progress = 1.0;
-          } else if (status == DownloadTaskStatus.failed) {
-            _status = 'Download failed';
-            _isDownloading = false;
-          } else if (status == DownloadTaskStatus.running) {
-            _progress = progress / 100.0;
-            _status = 'Downloading... ${progress}%';
-          } else if (status == DownloadTaskStatus.enqueued) {
-            _status = 'Download queued';
-          }
-        });
-
-        _checkQueuedTasks();
+      // Listen to download updates
+      _downloadBloc.stream.listen((state) {
+        _loadDownloads();
       });
-
-      // Register the callback
-      FlutterDownloader.registerCallback(downloadCallback);
-      AppLogger.i('flutter_downloader initialized successfully');
-      _checkQueuedTasks();
-    } catch (e) {
-      AppLogger.e('Error initializing flutter_downloader: $e');
-    }
-  }
-
-  void _checkQueuedTasks() async {
-    try {
-      final tasks = await FlutterDownloader.loadTasks();
-      final queued = tasks
-              ?.where((task) =>
-                  task.status == DownloadTaskStatus.enqueued ||
-                  task.status == DownloadTaskStatus.running)
-              .toList() ??
-          [];
 
       setState(() {
-        _queuedTasks =
-            queued.map((task) => 'Task ${task.taskId} - ${_getStatusString(task.status)}').toList();
+        _isInitialized = true;
       });
 
-      AppLogger.i('Queued tasks: ${queued.length}');
-      for (final task in queued) {
-        AppLogger.i('  - Task ${task.taskId}: ${_getStatusString(task.status)}');
-      }
+      AppLogger.i('Download manager demo initialized successfully');
     } catch (e) {
-      AppLogger.e('Error checking queued tasks: $e');
+      AppLogger.e('Error initializing download manager demo: $e');
     }
   }
 
-  String _getStatusString(DownloadTaskStatus status) {
-    switch (status) {
-      case DownloadTaskStatus.enqueued:
-        return 'Queued';
-      case DownloadTaskStatus.running:
-        return 'Running';
-      case DownloadTaskStatus.complete:
-        return 'Complete';
-      case DownloadTaskStatus.failed:
-        return 'Failed';
-      case DownloadTaskStatus.canceled:
-        return 'Canceled';
-      case DownloadTaskStatus.paused:
-        return 'Paused';
-      default:
-        return 'Unknown';
-    }
+  void _loadDownloads() {
+    setState(() {
+      _downloads = _downloadService.downloads;
+    });
   }
 
-  initDownload() async {
+  Future<void> _startTestDownload() async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final downloadsPath = '${directory.path}';
+      AppLogger.i('Starting test download...');
 
-      AppLogger.i('Starting download to: $downloadsPath');
-
-      setState(() {
-        _isDownloading = true;
-        _progress = 0.0;
-        _status = 'Starting...';
-      });
-
-      final taskId = await FlutterDownloader.enqueue(
+      final task = await _downloadService.startDownload(
         url: 'https://httpbin.org/bytes/1024', // 1KB test file
-        savedDir: downloadsPath,
-        fileName: 'test_file.bin',
-        showNotification: true,
-        openFileFromNotification: true,
+        fileName: 'test_file_${DateTime.now().millisecondsSinceEpoch}.bin',
+        metadata: {
+          'type': 'test',
+          'description': 'Small test file for demo',
+        },
       );
 
-      AppLogger.i('Download task created with ID: $taskId');
+      AppLogger.i('Test download started: ${task.fileName}');
+      _loadDownloads();
     } catch (e) {
-      AppLogger.e('Download error: $e');
-      setState(() {
-        _status = 'Error: $e';
-        _isDownloading = false;
-      });
+      AppLogger.e('Error starting test download: $e');
+      _showErrorSnackBar('Failed to start download: $e');
     }
   }
 
-  void _downloadLargeFile() async {
+  Future<void> _startLargeDownload() async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final downloadsPath = '${directory.path}';
+      AppLogger.i('Starting large file download...');
 
-      AppLogger.i('Starting large file download to: $downloadsPath');
-
-      setState(() {
-        _isDownloading = true;
-        _progress = 0.0;
-        _status = 'Starting large download...';
-      });
-
-      final taskId = await FlutterDownloader.enqueue(
+      final task = await _downloadService.startDownload(
         url: 'https://ash-speed.hetzner.com/1GB.bin',
-        savedDir: downloadsPath,
-        fileName: '1GB.bin',
-        showNotification: true,
-        openFileFromNotification: true,
+        fileName: 'large_file_${DateTime.now().millisecondsSinceEpoch}.bin',
+        metadata: {
+          'type': 'large',
+          'description': 'Large file for testing resume functionality',
+        },
       );
 
-      AppLogger.i('Large download task created with ID: $taskId');
+      AppLogger.i('Large download started: ${task.fileName}');
+      _loadDownloads();
     } catch (e) {
-      AppLogger.e('Large download error: $e');
-      setState(() {
-        _status = 'Error: $e';
-        _isDownloading = false;
-      });
+      AppLogger.e('Error starting large download: $e');
+      _showErrorSnackBar('Failed to start download: $e');
     }
   }
 
-  void _clearQueue() async {
+  Future<void> _pauseDownload(String id) async {
     try {
-      await FlutterDownloader.cancelAll();
-      setState(() {
-        _queuedTasks.clear();
-        _isDownloading = false;
-        _status = 'Queue cleared';
-      });
-      AppLogger.i('Download queue cleared');
+      await _downloadService.pauseDownload(id);
+      AppLogger.i('Download paused: $id');
+      _loadDownloads();
     } catch (e) {
-      AppLogger.e('Error clearing queue: $e');
+      AppLogger.e('Error pausing download: $e');
+      _showErrorSnackBar('Failed to pause download: $e');
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Download Demo (flutter_downloader)'),
+  Future<void> _resumeDownload(String id) async {
+    try {
+      await _downloadService.resumeDownload(id);
+      AppLogger.i('Download resumed: $id');
+      _loadDownloads();
+    } catch (e) {
+      AppLogger.e('Error resuming download: $e');
+      _showErrorSnackBar('Failed to resume download: $e');
+    }
+  }
+
+  Future<void> _cancelDownload(String id) async {
+    try {
+      await _downloadService.cancelDownload(id);
+      AppLogger.i('Download cancelled: $id');
+      _loadDownloads();
+    } catch (e) {
+      AppLogger.e('Error cancelling download: $e');
+      _showErrorSnackBar('Failed to cancel download: $e');
+    }
+  }
+
+  Future<void> _deleteDownload(String id) async {
+    try {
+      await _downloadService.deleteDownload(id);
+      AppLogger.i('Download deleted: $id');
+      _loadDownloads();
+    } catch (e) {
+      AppLogger.e('Error deleting download: $e');
+      _showErrorSnackBar('Failed to delete download: $e');
+    }
+  }
+
+  Future<void> _clearAllDownloads() async {
+    try {
+      await _downloadService.clearAllDownloads();
+      AppLogger.i('All downloads cleared');
+      _loadDownloads();
+    } catch (e) {
+      AppLogger.e('Error clearing downloads: $e');
+      _showErrorSnackBar('Failed to clear downloads: $e');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+    );
+  }
+
+  String _getStatusText(DownloadStatus status) {
+    switch (status) {
+      case DownloadStatus.idle:
+        return 'Idle';
+      case DownloadStatus.downloading:
+        return 'Downloading';
+      case DownloadStatus.paused:
+        return 'Paused';
+      case DownloadStatus.completed:
+        return 'Completed';
+      case DownloadStatus.failed:
+        return 'Failed';
+      case DownloadStatus.cancelled:
+        return 'Cancelled';
+    }
+  }
+
+  Color _getStatusColor(DownloadStatus status) {
+    switch (status) {
+      case DownloadStatus.idle:
+        return Colors.grey;
+      case DownloadStatus.downloading:
+        return Colors.blue;
+      case DownloadStatus.paused:
+        return Colors.orange;
+      case DownloadStatus.completed:
+        return Colors.green;
+      case DownloadStatus.failed:
+        return Colors.red;
+      case DownloadStatus.cancelled:
+        return Colors.grey;
+    }
+  }
+
+  Widget _buildDownloadCard(DownloadTask download) {
+    final isActive = download.isActive;
+    final isCompleted = download.isCompleted;
+    final isFailed = download.isFailed;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Status: $_status',
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        download.fileName,
+                        style: Theme.of(context).textTheme.titleMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Status: ${_getStatusText(download.status)}',
+                        style: TextStyle(
+                          color: _getStatusColor(download.status),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (download.totalBytes > 0) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '${_formatBytes(download.downloadedBytes)} / ${_formatBytes(download.totalBytes)}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (download.metadata != null && download.metadata!['type'] != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      download.metadata!['type'].toString().toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.blue[700],
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            const SizedBox(height: 20),
-            if (_isDownloading) ...[
+            if (isActive && download.totalBytes > 0) ...[
+              const SizedBox(height: 12),
               LinearProgressIndicator(
-                value: _progress,
+                value: download.progress,
                 backgroundColor: Colors.grey[300],
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                valueColor: AlwaysStoppedAnimation<Color>(_getStatusColor(download.status)),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Text(
-                'Progress: ${(_progress * 100).toStringAsFixed(1)}%',
-                style: Theme.of(context).textTheme.bodyLarge,
+                '${(download.progress * 100).toStringAsFixed(1)}%',
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center,
               ),
             ],
-            if (_queuedTasks.isNotEmpty) ...[
-              const SizedBox(height: 20),
-              Text(
-                'Queued Tasks:',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 10),
-              ...(_queuedTasks.map((task) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(task, style: Theme.of(context).textTheme.bodyMedium),
-                  ))),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: _clearQueue,
-                    child: const Text('Clear Queue'),
+            if (download.errorMessage != null) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Error: ${download.errorMessage}',
+                  style: TextStyle(
+                    color: Colors.red[700],
+                    fontSize: 12,
                   ),
-                  const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: _checkQueuedTasks,
-                    child: const Text('Refresh'),
-                  ),
-                ],
+                ),
               ),
             ],
-            const Spacer(),
-            Center(
-              child: Column(
-                children: [
-                  FloatingActionButton.extended(
-                    onPressed: _isDownloading ? null : initDownload,
-                    label: Text(_isDownloading ? 'Downloading...' : 'Test Download (1KB)'),
-                    icon: Icon(_isDownloading ? Icons.downloading : Icons.download),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                if (isActive && download.status == DownloadStatus.downloading)
+                  ElevatedButton.icon(
+                    onPressed: () => _pauseDownload(download.id),
+                    icon: const Icon(Icons.pause),
+                    label: const Text('Pause'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _isDownloading ? null : () => _downloadLargeFile(),
-                    child: const Text('Download Large File (1GB)'),
+                if (download.status == DownloadStatus.paused)
+                  ElevatedButton.icon(
+                    onPressed: () => _resumeDownload(download.id),
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('Resume'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
                   ),
-                ],
-              ),
+                if (isActive)
+                  ElevatedButton.icon(
+                    onPressed: () => _cancelDownload(download.id),
+                    icon: const Icon(Icons.stop),
+                    label: const Text('Cancel'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                if (isCompleted || isFailed || download.status == DownloadStatus.cancelled)
+                  ElevatedButton.icon(
+                    onPressed: () => _deleteDownload(download.id),
+                    icon: const Icon(Icons.delete),
+                    label: const Text('Delete'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+              ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    if (bytes < 1024 * 1024 * 1024) return '${(bytes / 1024 / 1024).toStringAsFixed(1)} MB';
+    return '${(bytes / 1024 / 1024 / 1024).toStringAsFixed(1)} GB';
+  }
+
+  Map<String, dynamic> _getDownloadStats() {
+    return _downloadService.getDownloadStats();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final stats = _getDownloadStats();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Download Manager Demo'),
+        actions: [
+          if (_downloads.isNotEmpty)
+            IconButton(
+              onPressed: _clearAllDownloads,
+              icon: const Icon(Icons.clear_all),
+              tooltip: 'Clear All Downloads',
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Statistics Section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            color: Colors.grey[100],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Download Statistics',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStatItem('Total', stats['total'].toString(), Colors.blue),
+                    _buildStatItem('Downloading', stats['downloading'].toString(), Colors.orange),
+                    _buildStatItem('Completed', stats['completed'].toString(), Colors.green),
+                    _buildStatItem('Failed', stats['failed'].toString(), Colors.red),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Downloads List
+          Expanded(
+            child: _downloads.isEmpty
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.download_outlined,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'No downloads yet',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Start a download to see it here',
+                          style: TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _downloads.length,
+                    itemBuilder: (context, index) {
+                      return _buildDownloadCard(_downloads[index]);
+                    },
+                  ),
+          ),
+
+          // Action Buttons
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _startTestDownload,
+                    icon: const Icon(Icons.download),
+                    label: const Text('Test Download (1KB)'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _startLargeDownload,
+                    icon: const Icon(Icons.file_download),
+                    label: const Text('Large File (1GB)'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+          ),
+        ),
+      ],
     );
   }
 }

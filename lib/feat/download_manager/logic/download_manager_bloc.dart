@@ -148,7 +148,7 @@ class DownloadManagerBloc extends HydratedBloc<DownloadManagerEvent, DownloadMan
       AppLogger.i('Repository pause command completed');
 
       // Update download task
-      final downloadTask = await _repository.getDownloadTask(event.id);
+      final downloadTask = _repository.getDownloadTask(event.id);
       if (downloadTask != null) {
         AppLogger.i('Updated task info:');
         AppLogger.i('  - Status: ${downloadTask.status}');
@@ -187,7 +187,7 @@ class DownloadManagerBloc extends HydratedBloc<DownloadManagerEvent, DownloadMan
       AppLogger.i('Repository resume command completed');
 
       // Update download task
-      final downloadTask = await _repository.getDownloadTask(event.id);
+      final downloadTask = _repository.getDownloadTask(event.id);
       if (downloadTask != null) {
         AppLogger.i('Updated task info:');
         AppLogger.i('  - Status: ${downloadTask.status}');
@@ -225,7 +225,7 @@ class DownloadManagerBloc extends HydratedBloc<DownloadManagerEvent, DownloadMan
       AppLogger.i('Repository cancel command completed');
 
       // Update download task
-      final downloadTask = await _repository.getDownloadTask(event.id);
+      final downloadTask = _repository.getDownloadTask(event.id);
       if (downloadTask != null) {
         AppLogger.i('Updated task info:');
         AppLogger.i('  - Status: ${downloadTask.status}');
@@ -326,7 +326,7 @@ class DownloadManagerBloc extends HydratedBloc<DownloadManagerEvent, DownloadMan
     Emitter<DownloadManagerState> emit,
   ) async {
     try {
-      final downloadTask = await _repository.getDownloadTask(event.id);
+      final downloadTask = _repository.getDownloadTask(event.id);
 
       if (downloadTask != null) {
         final updatedDownloads = Map<String, DownloadTask>.from(state.downloads);
@@ -368,7 +368,7 @@ class DownloadManagerBloc extends HydratedBloc<DownloadManagerEvent, DownloadMan
     Emitter<DownloadManagerState> emit,
   ) async {
     try {
-      final downloadTask = await _repository.getDownloadTask(event.id);
+      final downloadTask = _repository.getDownloadTask(event.id);
 
       if (downloadTask != null) {
         final updatedDownloads = Map<String, DownloadTask>.from(state.downloads);

@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:offline_ai/shared/shared.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -57,12 +56,8 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder, {required AppEnv env
   // * Init local notifications!
   await LocalNotificationService().init();
 
-  // Initialize background downloader BEFORE the app starts
-  AppLogger.i('=== Initializing Background Downloader in Bootstrap ===');
-  // await getIt.get<DownloadManagerService>().initializeDownloader();
-  AppLogger.i('=== Background Downloader Initialized in Bootstrap ===');
-  // Plugin must be initialized before using
-  // await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
+  // Initialize download manager
+  await getIt.get<DownloadManagerService>().initialize();
 
   runApp(
     UpgradeAlert(

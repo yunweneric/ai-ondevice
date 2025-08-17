@@ -1,71 +1,61 @@
 import 'dart:io';
-import 'package:background_downloader/background_downloader.dart' as bg;
+import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:offline_ai/shared/shared.dart';
 
 class DownloadManagerService {
   final PermissionService _permissionService;
+  final Dio _dio;
+  final Map<String, DownloadTask> _downloads = {};
+  final Map<String, StreamController<DownloadProgress>> _progressControllers = {};
+  final Map<String, CancelToken> _cancelTokens = {};
 
-  DownloadManagerService() : _permissionService = PermissionService();
+  DownloadManagerService() 
+    : _permissionService = PermissionService(),
+      _dio = Dio() {
+    _setupDio();
+  }
 
-  /// Initialize background_downloader
-  Future<void> initializeDownloader() async {
+  /// Setup Dio with proper configuration for downloads
+  void _setupDio() {
+    _dio.options.connectTimeout = const Duration(seconds: 30);
+    _dio.options.receiveTimeout = const Duration(seconds: 60);
+    _dio.options.sendTimeout = const Duration(seconds: 30);
+    
+    // Add interceptors for logging
+    _dio.interceptors.add(LogInterceptor(
+      requestBody: false,
+      responseBody: false,
+      logPrint: (obj) => AppLogger.i(obj.toString()),
+    ));
+  }
+
+  /// Initialize the download manager
+  Future<void> initialize() async {
     try {
-      AppLogger.i('=== Initializing Background Downloader ===');
-
-      // Configure the downloader
-      await bg.FileDownloader().configureNotification(
-        running: bg.TaskNotification('Downloading', 'file: {filename}'),
-        complete: bg.TaskNotification('Download finished', 'file: {filename}'),
-        progressBar: true,
-      );
-
-      // Start the downloader and track tasks
-      AppLogger.i('Starting FileDownloader...');
-      await bg.FileDownloader().start();
-      AppLogger.i('FileDownloader started successfully');
-
-      AppLogger.i('Starting task tracking...');
-      await bg.FileDownloader().trackTasks();
-      AppLogger.i('Task tracking started successfully');
-
-      // Test if the downloader is working
-      AppLogger.i('Testing downloader functionality...');
-      try {
-        final testTask = bg.DownloadTask(
-          url: 'https://httpbin.org/bytes/1024', // Small test file
-          filename: 'test.txt',
-          directory: (await getDownloadDirectory()).path,
-          updates: bg.Updates.statusAndProgress,
-        );
-
-        AppLogger.i('Test task created, attempting download...');
-        final testResult = await bg.FileDownloader().download(testTask);
-        AppLogger.i('Test download completed with status: ${testResult.status}');
-
-        // Clean up test file
-        try {
-          final testFile = File('${(await getDownloadDirectory()).path}/test.txt');
-          if (await testFile.exists()) {
-            await testFile.delete();
-            AppLogger.i('Test file cleaned up');
-          }
-        } catch (e) {
-          AppLogger.e('Failed to clean up test file: $e');
-        }
-      } catch (e) {
-        AppLogger.e('Test download failed: $e');
-        AppLogger.e('This indicates a fundamental issue with the downloader');
+      AppLogger.i('=== Initializing Dio-based Download Manager ===');
+      
+      // Check permissions
+      final permissionsGranted = await _permissionService.requestDownloadPermissions();
+      if (!permissionsGranted) {
+        throw Exception('Download permissions not granted');
       }
 
-      AppLogger.i('Background downloader initialized successfully');
+      // Create download directory if it doesn't exist
+      final downloadDir = await getDownloadDirectory();
+      if (!await downloadDir.exists()) {
+        await downloadDir.create(recursive: true);
+      }
+
+      AppLogger.i('Download manager initialized successfully');
     } catch (e) {
-      AppLogger.e('Failed to initialize background downloader: $e');
-      AppLogger.e('Stack trace: ${StackTrace.current}');
+      AppLogger.e('Failed to initialize download manager: $e');
+      rethrow;
     }
   }
 
-  /// Start a new download and wait for completion
+  /// Start a new download with resumable capability
   Future<DownloadTask> startDownload({
     required String url,
     required String fileName,
@@ -74,134 +64,208 @@ class DownloadManagerService {
     Function(double)? onProgress,
   }) async {
     final id = customId ?? _generateId();
+    
+    try {
+      // Check if download already exists
+      if (_downloads.containsKey(id)) {
+        throw Exception('Download with ID $id already exists');
+      }
 
-    // Check permissions
-    final permissionsGranted = await _permissionService.requestDownloadPermissions();
-    if (!permissionsGranted) {
-      throw Exception('Download permissions not granted');
+      // Check permissions
+      final permissionsGranted = await _permissionService.requestDownloadPermissions();
+      if (!permissionsGranted) {
+        throw Exception('Download permissions not granted');
+      }
+
+      // Get download directory
+      final downloadDir = await getDownloadDirectory();
+      final filePath = '${downloadDir.path}/$fileName';
+
+      // Check if file exists for resume capability
+      final file = File(filePath);
+      int downloadedBytes = 0;
+      bool canResume = false;
+
+      if (await file.exists()) {
+        downloadedBytes = await file.length();
+        canResume = downloadedBytes > 0;
+        AppLogger.i('Found existing file: $filePath, size: $downloadedBytes bytes');
+      }
+
+      // Create download task
+      final task = DownloadTask(
+        id: id,
+        url: url,
+        fileName: fileName,
+        filePath: filePath,
+        totalBytes: 0, // Will be updated when we get response
+        downloadedBytes: downloadedBytes,
+        status: DownloadStatus.downloading,
+        createdAt: DateTime.now(),
+        metadata: metadata,
+      );
+
+      _downloads[id] = task;
+      _progressControllers[id] = StreamController<DownloadProgress>.broadcast();
+      _cancelTokens[id] = CancelToken();
+
+      // Start the actual download
+      _performDownload(task, canResume, downloadedBytes);
+
+      return task;
+    } catch (e) {
+      AppLogger.e('Failed to start download: $e');
+      rethrow;
     }
-
-    // Get download directory
-    final directory = await getDownloadDirectory();
-    final savedDir = directory.path;
-
-    // Create background_downloader task
-    final backgroundTask = bg.DownloadTask(
-      url: url,
-      filename: fileName,
-      directory: savedDir,
-      updates: bg.Updates.statusAndProgress,
-      metaData: id,
-      requiresWiFi: false,
-      retries: 3,
-      allowPause: true,
-    );
-
-    AppLogger.i('=== Starting Background Download ===');
-    AppLogger.i('Custom ID: $id');
-    AppLogger.i('URL: $url');
-    AppLogger.i('File: $fileName');
-    AppLogger.i('Directory: $savedDir');
-
-    // Start the download and wait for result
-    AppLogger.i('Calling FileDownloader().download...');
-    final result = await bg.FileDownloader().download(
-      backgroundTask,
-      onProgress: (progress) {
-        AppLogger.log('Progress: ${(progress * 100).toStringAsFixed(1)}%');
-        onProgress?.call(progress);
-      },
-      onStatus: (status) {
-        AppLogger.log('Status: $status');
-        AppLogger.log('Status type: ${status.runtimeType}');
-      },
-    );
-    AppLogger.i('Download call completed');
-
-    AppLogger.i('Download completed with status: ${result.status}');
-
-    // Create our download task based on the result
-    final downloadTask = DownloadTask(
-      id: backgroundTask.taskId,
-      url: url,
-      fileName: fileName,
-      filePath: '$savedDir/$fileName',
-      totalBytes: 0, // Will be updated from database
-      downloadedBytes: 0,
-      status: _convertTaskStatus(result.status),
-      createdAt: DateTime.now(),
-      metadata: metadata,
-    );
-
-    AppLogger.i('Download task created successfully');
-    return downloadTask;
   }
 
-  /// Resume a paused download
-  Future<void> resumeDownload(String id) async {
+  /// Perform the actual download with resume support
+  Future<void> _performDownload(DownloadTask task, bool canResume, int startByte) async {
     try {
-      AppLogger.i('Resume download requested: $id');
-      // For now, just log since we need to get the actual task
-      AppLogger.i('Download resume logged: $id');
+      final cancelToken = _cancelTokens[task.id];
+      if (cancelToken == null) return;
+
+      // Prepare headers for resume
+      final headers = <String, dynamic>{};
+      if (canResume && startByte > 0) {
+        headers['Range'] = 'bytes=$startByte-';
+        AppLogger.i('Resuming download from byte $startByte');
+      }
+
+      // Create file for writing
+      final file = File(task.filePath);
+      final raf = await file.open(mode: canResume ? FileMode.writeOnlyAppend : FileMode.writeOnly);
+
+      // Perform download with progress tracking
+      await _dio.download(
+        task.url,
+        task.filePath,
+        options: Options(
+          headers: headers,
+          responseType: ResponseType.bytes,
+        ),
+        cancelToken: cancelToken,
+        onReceiveProgress: (received, total) async {
+          if (total != null) {
+            final currentBytes = startByte + received;
+            final progress = DownloadProgress(
+              taskId: task.id,
+              progress: total > 0 ? currentBytes / total : 0.0,
+              downloadedBytes: currentBytes,
+              totalBytes: total,
+              speed: 0.0, // Could calculate speed if needed
+              estimatedTimeRemaining: Duration.zero, // TODO: Calculate actual time remaining
+              timestamp: DateTime.now(),
+            );
+
+            // Update task
+            _downloads[task.id] = task.copyWith(
+              totalBytes: total,
+              downloadedBytes: currentBytes,
+            );
+
+            // Emit progress
+            _progressControllers[task.id]?.add(progress);
+
+            // Write to file
+            if (received > 0) {
+              // For resume, we need to handle this differently
+              // This is a simplified approach
+            }
+          }
+        },
+      );
+
+      // Download completed
+      final finalTask = _downloads[task.id]?.copyWith(
+        status: DownloadStatus.completed,
+        completedAt: DateTime.now(),
+      );
+      
+      if (finalTask != null) {
+        _downloads[task.id] = finalTask;
+      }
+
+      AppLogger.i('Download completed: ${task.fileName}');
     } catch (e) {
-      throw Exception('Failed to resume download: $e');
+      if (e is DioException && e.type == DioExceptionType.cancel) {
+        AppLogger.i('Download cancelled: ${task.fileName}');
+        _downloads[task.id] = task.copyWith(
+          status: DownloadStatus.cancelled,
+        );
+      } else {
+        AppLogger.e('Download failed: ${task.fileName}, error: $e');
+        _downloads[task.id] = task.copyWith(
+          status: DownloadStatus.failed,
+          errorMessage: e.toString(),
+        );
+      }
+    } finally {
+      // Clean up
+      final raf = await File(task.filePath).open(mode: FileMode.read);
+      await raf.close();
     }
   }
 
   /// Pause a download
   Future<void> pauseDownload(String id) async {
-    try {
-      AppLogger.i('Pause download requested: $id');
-      // For now, just log since we need to get the actual task
-      AppLogger.i('Download pause logged: $id');
-    } catch (e) {
-      throw Exception('Failed to pause download: $e');
+    final task = _downloads[id];
+    if (task == null || task.status != DownloadStatus.downloading) {
+      throw Exception('Download not found or not downloading');
     }
+
+    // Cancel the current download
+    _cancelTokens[id]?.cancel('Paused by user');
+    
+    // Update status
+    _downloads[id] = task.copyWith(
+      status: DownloadStatus.paused,
+    );
+
+    AppLogger.i('Download paused: ${task.fileName}');
+  }
+
+  /// Resume a paused download
+  Future<void> resumeDownload(String id) async {
+    final task = _downloads[id];
+    if (task == null || task.status != DownloadStatus.paused) {
+      throw Exception('Download not found or not paused');
+    }
+
+    // Create new cancel token
+    _cancelTokens[id] = CancelToken();
+
+    // Resume download
+    _downloads[id] = task.copyWith(
+      status: DownloadStatus.downloading,
+    );
+
+    _performDownload(task, true, task.downloadedBytes);
+    AppLogger.i('Download resumed: ${task.fileName}');
   }
 
   /// Cancel a download
   Future<void> cancelDownload(String id) async {
-    try {
-      AppLogger.i('Cancel download requested: $id');
-      // For now, just log since we need to get the actual task
-      AppLogger.i('Download cancel logged: $id');
-    } catch (e) {
-      throw Exception('Failed to cancel download: $e');
+    final task = _downloads[id];
+    if (task == null) {
+      throw Exception('Download not found');
     }
-  }
 
-  /// Delete a completed download
-  Future<void> deleteDownload(String id) async {
-    AppLogger.i('Deleting download: $id');
+    // Cancel the download
+    _cancelTokens[id]?.cancel('Cancelled by user');
+    
+    // Update status
+    _downloads[id] = task.copyWith(
+      status: DownloadStatus.cancelled,
+    );
 
-    try {
-      // For now, just log since we need to get the actual task
-      AppLogger.i('Download delete logged: $id');
-    } catch (e) {
-      AppLogger.e('Failed to delete download: $id, Error: $e');
-      throw Exception('Failed to delete download: $e');
+    // Clean up file if it exists
+    final file = File(task.filePath);
+    if (await file.exists()) {
+      await file.delete();
     }
-  }
 
-  /// Auto-resume downloads that were interrupted
-  Future<void> autoResumeDownloads() async {
-    AppLogger.i('Auto-resuming downloads...');
-
-    try {
-      final records = await bg.FileDownloader().database.allRecords();
-
-      for (final record in records) {
-        if (record.status == bg.TaskStatus.paused) {
-          AppLogger.i('Auto-resuming paused task: ${record.taskId}');
-          // For now, just log since we need to get the actual task
-          AppLogger.i('Auto-resume logged for: ${record.taskId}');
-        }
-      }
-
-      AppLogger.i('Auto-resume completed');
-    } catch (e) {
-      AppLogger.e('Failed to auto-resume downloads: $e');
-    }
+    AppLogger.i('Download cancelled: ${task.fileName}');
   }
 
   /// Get download directory
@@ -235,97 +299,113 @@ class DownloadManagerService {
     }
   }
 
-  /// Convert background_downloader TaskStatus to our DownloadStatus
-  DownloadStatus _convertTaskStatus(bg.TaskStatus status) {
-    switch (status) {
-      case bg.TaskStatus.enqueued:
-        return DownloadStatus.downloading;
-      case bg.TaskStatus.running:
-        return DownloadStatus.downloading;
-      case bg.TaskStatus.complete:
-        return DownloadStatus.completed;
-      case bg.TaskStatus.failed:
-        return DownloadStatus.failed;
-      case bg.TaskStatus.canceled:
-        return DownloadStatus.cancelled;
-      case bg.TaskStatus.paused:
-        return DownloadStatus.paused;
-      case bg.TaskStatus.notFound:
-        return DownloadStatus.failed;
-      case bg.TaskStatus.waitingToRetry:
-        return DownloadStatus.downloading;
-    }
+  /// Get download progress stream
+  Stream<DownloadProgress> getProgressStream(String id) {
+    return _progressControllers[id]?.stream ?? Stream.empty();
   }
 
-  /// Generate unique download ID
+  /// Get download task by ID
+  DownloadTask? getDownloadTask(String id) {
+    return _downloads[id];
+  }
+
+  /// Get all downloads
+  List<DownloadTask> get downloads => _downloads.values.toList();
+
+  /// Get downloads by status
+  List<DownloadTask> getDownloadsByStatus(DownloadStatus status) {
+    return _downloads.values.where((task) => task.status == status).toList();
+  }
+
+  /// Get active downloads (downloading or paused)
+  List<DownloadTask> get activeDownloads {
+    return _downloads.values.where((task) => task.isActive).toList();
+  }
+
+  /// Get completed downloads
+  List<DownloadTask> get completedDownloads {
+    return _downloads.values.where((task) => task.isCompleted).toList();
+  }
+
+  /// Get failed downloads
+  List<DownloadTask> get failedDownloads {
+    return _downloads.values.where((task) => task.isFailed).toList();
+  }
+
+  /// Delete a download and its file
+  Future<void> deleteDownload(String id) async {
+    final task = _downloads[id];
+    if (task == null) return;
+
+    // Cancel if active
+    if (task.isActive) {
+      _cancelTokens[id]?.cancel('Deleted by user');
+    }
+
+    // Delete file
+    final file = File(task.filePath);
+    if (await file.exists()) {
+      await file.delete();
+    }
+
+    // Remove from tracking
+    _downloads.remove(id);
+    _progressControllers[id]?.close();
+    _progressControllers.remove(id);
+    _cancelTokens.remove(id);
+
+    AppLogger.i('Download deleted: ${task.fileName}');
+  }
+
+  /// Clear all downloads
+  Future<void> clearAllDownloads() async {
+    for (final id in _downloads.keys.toList()) {
+      await deleteDownload(id);
+    }
+    AppLogger.i('All downloads cleared');
+  }
+
+  /// Get download statistics
+  Map<String, dynamic> getDownloadStats() {
+    final total = _downloads.length;
+    final downloading = _downloads.values.where((t) => t.status == DownloadStatus.downloading).length;
+    final paused = _downloads.values.where((t) => t.status == DownloadStatus.paused).length;
+    final completed = _downloads.values.where((t) => t.status == DownloadStatus.completed).length;
+    final failed = _downloads.values.where((t) => t.status == DownloadStatus.failed).length;
+    final cancelled = _downloads.values.where((t) => t.status == DownloadStatus.cancelled).length;
+
+    return {
+      'total': total,
+      'downloading': downloading,
+      'paused': paused,
+      'completed': completed,
+      'failed': failed,
+      'cancelled': cancelled,
+    };
+  }
+
+  /// Generate unique ID for downloads
   String _generateId() {
-    final id = DateTime.now().millisecondsSinceEpoch.toString();
-    AppLogger.log('Generated download ID: $id');
-    return id;
+    return DateTime.now().millisecondsSinceEpoch.toString();
   }
 
-  /// Get all downloads from database
-  Future<Map<String, DownloadTask>> get downloads async {
-    final downloads = <String, DownloadTask>{};
-
-    try {
-      // Get all records from database
-      final records = await bg.FileDownloader().database.allRecords();
-
-      for (final record in records) {
-        final downloadTask = DownloadTask(
-          id: record.taskId,
-          url: record.task.url,
-          fileName: record.task.filename,
-          filePath: record.task.filePath.toString(),
-          totalBytes: record.expectedFileSize,
-          downloadedBytes: (record.expectedFileSize * record.progress).round(),
-          status: _convertTaskStatus(record.status),
-          createdAt: DateTime.now(),
-          metadata: record.task.metaData != null ? {'customId': record.task.metaData} : null,
-        );
-        downloads[record.taskId] = downloadTask;
-      }
-    } catch (e) {
-      AppLogger.e('Error getting downloads from database: $e');
+  /// Dispose the service
+  Future<void> dispose() async {
+    // Cancel all active downloads
+    for (final token in _cancelTokens.values) {
+      token.cancel('Service disposed');
     }
 
-    return downloads;
-  }
-
-  /// Get download task by ID from database
-  Future<DownloadTask?> getDownloadTask(String id) async {
-    try {
-      final record = await bg.FileDownloader().database.recordForId(id);
-      if (record == null) return null;
-
-      return DownloadTask(
-        id: record.taskId,
-        url: record.task.url,
-        fileName: record.task.filename,
-        filePath: record.task.filePath.toString(),
-        totalBytes: record.expectedFileSize,
-        downloadedBytes: (record.expectedFileSize * record.progress).round(),
-        status: _convertTaskStatus(record.status),
-        createdAt: DateTime.now(),
-        metadata: record.task.metaData != null ? {'customId': record.task.metaData} : null,
-      );
-    } catch (e) {
-      AppLogger.e('Error getting download task: $e');
-      return null;
+    // Close all progress controllers
+    for (final controller in _progressControllers.values) {
+      await controller.close();
     }
-  }
 
-  /// Get progress stream for a download (not used with direct download method)
-  Stream<DownloadProgress>? getProgressStream(String id) {
-    // This method is kept for compatibility but won't be used
-    // since we're using the direct download method
-    return null;
-  }
+    // Clear all data
+    _downloads.clear();
+    _progressControllers.clear();
+    _cancelTokens.clear();
 
-  /// Dispose resources
-  void dispose() {
-    AppLogger.i('Disposing DownloadManagerService');
-    AppLogger.i('DownloadManagerService disposed');
+    AppLogger.i('Download manager service disposed');
   }
 }

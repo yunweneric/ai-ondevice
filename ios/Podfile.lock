@@ -1,13 +1,9 @@
 PODS:
-  - background_downloader (0.0.1):
-    - Flutter
   - device_info_plus (0.0.1):
     - Flutter
   - disk_space_plus (0.0.1):
     - Flutter
   - Flutter (1.0.0)
-  - flutter_downloader (0.0.1):
-    - Flutter
   - flutter_gemma (0.8.6):
     - Flutter
     - MediaPipeTasksGenAI (= 0.10.24)
@@ -38,11 +34,9 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
-  - background_downloader (from `.symlinks/plugins/background_downloader/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - disk_space_plus (from `.symlinks/plugins/disk_space_plus/ios`)
   - Flutter (from `Flutter`)
-  - flutter_downloader (from `.symlinks/plugins/flutter_downloader/ios`)
   - flutter_gemma (from `.symlinks/plugins/flutter_gemma/ios`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - large_file_handler (from `.symlinks/plugins/large_file_handler/ios`)
@@ -60,16 +54,12 @@ SPEC REPOS:
     - MediaPipeTasksGenAIC
 
 EXTERNAL SOURCES:
-  background_downloader:
-    :path: ".symlinks/plugins/background_downloader/ios"
   device_info_plus:
     :path: ".symlinks/plugins/device_info_plus/ios"
   disk_space_plus:
     :path: ".symlinks/plugins/disk_space_plus/ios"
   Flutter:
     :path: Flutter
-  flutter_downloader:
-    :path: ".symlinks/plugins/flutter_downloader/ios"
   flutter_gemma:
     :path: ".symlinks/plugins/flutter_gemma/ios"
   flutter_local_notifications:
@@ -92,11 +82,9 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
 SPEC CHECKSUMS:
-  background_downloader: a05c77d32a0d70615b9c04577aa203535fc924ff
   device_info_plus: bf2e3232933866d73fe290f2942f2156cdd10342
   disk_space_plus: faa27633429bb392ecf7342395bf12040ca4ac9b
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_downloader: b7301ae057deadd4b1650dc7c05375f10ff12c39
   flutter_gemma: 130315f51c8c891729aaf7ed3987f2e8e44eca3d
   flutter_local_notifications: ff50f8405aaa0ccdc7dcfb9022ca192e8ad9688f
   large_file_handler: e3686e246052b0f03955789d3a04604574f80afe
@@ -110,6 +98,6 @@ SPEC CHECKSUMS:
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
   webview_flutter_wkwebview: a4af96a051138e28e29f60101d094683b9f82188
 
-PODFILE CHECKSUM: 04fc2eefec1ccb0d4d4f06ffeee94be7a4282055
+PODFILE CHECKSUM: 7f116eae39628ebfbe8ab4234284b45f055090b3
 
 COCOAPODS: 1.16.2
