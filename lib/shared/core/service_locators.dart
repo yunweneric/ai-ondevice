@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:offline_ai/shared/shared.dart';
 import 'package:offline_ai/feat/model_mangement/model_management.dart';
+import '../data/services/gemma_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -40,7 +41,8 @@ class ServiceLocators {
       ..registerSingleton<BottomNavBarBloc>(bottomNavBarBloc)
       ..registerSingleton<ModelDownloadBloc>(modelDownloadBloc)
       ..registerSingleton<PermissionService>(permissionService)
-      ..registerSingleton<PermissionBloc>(permissionBloc);
+      ..registerSingleton<PermissionBloc>(permissionBloc)
+      ..registerSingleton<GemmaService>(GemmaService());
 
     if (kDebugMode) {
       print('Service Locators registered!');

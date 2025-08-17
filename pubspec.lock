@@ -202,10 +202,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_gemma
-      sha256: bf3e1e76bf63aabe6bf92ea46e4f362ae6173eeeeb8be34764da467c80e7c42d
+      sha256: "6562a9694c9be6ed0a7d059b7eb05da37cdd69f3875564b06a870e67de1c3c47"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.1"
+    version: "0.10.2"
   flutter_lints:
     dependency: "direct dev"
     description:
