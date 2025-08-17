@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:offline_ai/feat/download_manager/presentation/screens/demo.dart';
 import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
 
@@ -7,7 +8,8 @@ final appRouter = GoRouter(
   routes: [
     UtilHelper.buildAnimatedRoute(
       path: AppRouteNames.start,
-      builder: (context, state) => const SplashScreen(),
+      builder: (context, state) => const DemoScreen(),
+      // builder: (context, state) => const SplashScreen(),
     ),
     UtilHelper.buildAnimatedRoute(
       path: AppRouteNames.onboarding,

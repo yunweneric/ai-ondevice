@@ -63,5 +63,16 @@
 	<string>This app requires local network access for model inference services.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	
+	<!-- Flutter Downloader Configuration -->
+	<key>FDMaximumConcurrentTasks</key>
+	<integer>3</integer>
+	
+	<!-- Allow HTTP connections for testing -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
