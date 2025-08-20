@@ -15,7 +15,7 @@ class _StorageOverviewState extends State<StorageOverview> {
   void initState() {
     super.initState();
     // Load storage info when widget initializes
-    getIt.get<FileManagementBloc>().add(LoadStorageInfoEvent());
+    // getIt.get<FileManagementBloc>().add(LoadStorageInfoEvent());
   }
 
   @override
@@ -157,22 +157,13 @@ class _StorageOverviewState extends State<StorageOverview> {
         AppSizing.kh10Spacer(),
 
         // Progress Bar
-        Container(
-          height: 8.h,
-          decoration: BoxDecoration(
-            color: theme.dividerColor,
-            borderRadius: BorderRadius.circular(4.r),
-          ),
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: usagePercentage,
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.purple,
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-            ),
-          ),
+
+        LinearProgressIndicator(
+          value: usagePercentage,
+          color: AppColors.purple,
+          minHeight: 8.h,
+          borderRadius: BorderRadius.circular(5.r),
+          backgroundColor: theme.scaffoldBackgroundColor,
         ),
 
         AppSizing.khSpacer(8.h),

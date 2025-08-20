@@ -60,7 +60,12 @@
     "view_all": "View All",
     "skip": "Skip",
     "active": "Active",
-    "select": "Select"
+    "select": "Select",
+    "selected": "Selected",
+    "just_now": "Just now",
+    "minutes_ago": "m ago",
+    "hours_ago": "h ago",
+    "days_ago": "d ago"
   },
   "chat": {
     "title": "Chat",
@@ -107,7 +112,9 @@
     "conversational_ai": "Conversational AI model",
     "image_generation": "Image generation model",
     "open_source_language": "Open source language model",
-    "speech_recognition": "Speech recognition model"
+    "speech_recognition": "Speech recognition model",
+    "downloaded": "Downloaded",
+    "completed": "Completed"
   },
   "onboarding": {
     "offline": "OFFLINE",

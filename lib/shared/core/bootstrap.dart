@@ -56,9 +56,6 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder, {required AppEnv env
   // * Init local notifications!
   await LocalNotificationService().init();
 
-  // Initialize download manager
-  await getIt.get<DownloadManagerService>().initialize();
-
   runApp(
     UpgradeAlert(
       child: EasyLocalization(

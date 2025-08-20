@@ -26,10 +26,10 @@ export 'core/service_locators.dart' show getIt;
 export 'data/services/local_notification_service.dart';
 export 'data/services/permission_service.dart';
 export 'data/services/file_management_service.dart';
+export 'data/services/flutter_gemma_service.dart';
+export 'data/services/chat_service.dart';
+export 'data/services/local_storage_service.dart';
 export 'data/repositories/file_management_repository.dart';
-
-// Download Manager
-export '../feat/download_manager/download_manager.dart';
 
 // presentation/routes
 export 'presentation/routes/app_router.dart';

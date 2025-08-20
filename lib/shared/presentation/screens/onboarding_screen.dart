@@ -113,14 +113,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               // Bottom Button
               AppButton(
-                onPressed: () {
-                  context.go(AppRouteNames.permission);
-
-                  // if (getIt.get<PermissionBloc>().state.allPermissionsGranted) {
-                  //   context.go(AppRouteNames.permission);
-                  // } else {
-                  //   context.go(AppRouteNames.permission);
-                  // }
+                onPressed: () async {
+                  final localStorageService = getIt.get<LocalStorageService>();
+                  await localStorageService.saveInit();
+                  if (context.mounted) {
+                    context.go(AppRouteNames.permission);
+                  }
                 },
                 title: LangUtil.trans("common.get_started"),
               ),

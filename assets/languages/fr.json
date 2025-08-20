@@ -60,7 +60,12 @@
     "view_all": "Voir tout",
     "skip": "Passer",
     "active": "Actif",
-    "select": "Sélectionner"
+    "select": "Sélectionner",
+    "selected": "Sélectionné",
+    "just_now": "À l'instant",
+    "minutes_ago": "min",
+    "hours_ago": "h",
+    "days_ago": "j"
   },
   "chat": {
     "title": "Chat",
@@ -107,7 +112,9 @@
     "conversational_ai": "Modèle IA conversationnel",
     "image_generation": "Modèle de génération d'images",
     "open_source_language": "Modèle de langage open source",
-    "speech_recognition": "Modèle de reconnaissance vocale"
+    "speech_recognition": "Modèle de reconnaissance vocale",
+    "downloaded": "Téléchargé",
+    "completed": "Terminé"
   },
   "onboarding": {
     "offline": "HORS LIGNE",

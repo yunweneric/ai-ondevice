@@ -46,6 +46,17 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    
+    <!-- OpenGL support for GPU acceleration with AI models -->
+    <uses-native-library
+        android:name="libOpenCL.so"
+        android:required="false"/>
+    <uses-native-library 
+        android:name="libOpenCL-car.so" 
+        android:required="false"/>
+    <uses-native-library 
+        android:name="libOpenCL-pixel.so" 
+        android:required="false"/>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

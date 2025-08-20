@@ -38,8 +38,9 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
-  flutter_gemma: ^0.10.1
+  flutter_gemma: ^0.10.2
   flutter_local_notifications: ^19.4.0
+  flutter_markdown: ^0.7.7+1
   flutter_screenutil: ^5.9.3
   flutter_svg: ^2.2.0
   get_it: ^8.1.0
@@ -51,6 +52,7 @@ dependencies:
   modal_bottom_sheet: ^3.0.0
   path_provider: ^2.1.2
   permission_handler: ^12.0.1
+  shared_preferences: ^2.5.3
   shimmer: ^3.0.0
   storage_space: ^1.2.0
   upgrader: ^11.4.0

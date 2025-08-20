@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -61,9 +62,23 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     }
 
     // Navigate after delay
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 1), () async {
       // ignore: use_build_context_synchronously
-      if (context.mounted) context.go(AppRouteNames.onboarding);
+
+      final hasDownloadedAnyModel = getIt.get<ModelDownloaderBloc>().state.downloads.isNotEmpty;
+
+      final localStorageService = getIt.get<LocalStorageService>();
+      final hasInit = await localStorageService.hasInit();
+
+      if (hasInit) {
+        if (hasDownloadedAnyModel) {
+          context.go(AppRouteNames.home);
+        } else {
+          context.go(AppRouteNames.onboardModel);
+        }
+        return;
+      }
+      context.go(AppRouteNames.onboarding);
     });
   }
 
@@ -78,6 +93,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: Column(
         children: [
@@ -86,46 +102,20 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             child: Center(
               child: FadeTransition(
                 opacity: _fadeAnimation,
-                child: SvgPicture.string(
-                  AppIcons.robot,
-                  width: 120,
-                  height: 120,
+                child: AppIcon(
+                  icon: AppIcons.robotHead,
+                  size: 120,
+                  color: theme.primaryColor,
+                  isString: true,
                 ),
               ),
             ),
           ),
 
-          // Progress bar with bouncing circles
-          Container(
-            padding: const EdgeInsets.only(bottom: 60),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                5,
-                (index) => Row(
-                  children: [
-                    AnimatedBuilder(
-                      animation: _bounceAnimations[index],
-                      builder: (context, child) {
-                        return Opacity(
-                          opacity: _bounceAnimations[index].value,
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    if (index < 4) const SizedBox(width: 16),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          const AppLoader(),
+          AppSizing.kh20Spacer(),
+          AppSizing.kh20Spacer(),
+          AppSizing.kh20Spacer(),
         ],
       ),
     );

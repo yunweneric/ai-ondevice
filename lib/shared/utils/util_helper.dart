@@ -12,6 +12,23 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
 
 class UtilHelper {
+  /// Get download directory path
+  static Future<Directory?> getDownloadDirectory() async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final downloadDir = Directory('${appDir.path}/models');
+
+      if (!downloadDir.existsSync()) {
+        await downloadDir.create(recursive: true);
+      }
+
+      return downloadDir;
+    } catch (e) {
+      AppLogger.e('Error getting download directory: $e');
+      return null;
+    }
+  }
+
   static hideKeyboard() {
     SystemChannels.textInput.invokeMethod('TextInput.hide');
   }
@@ -167,7 +184,8 @@ class UtilHelper {
     }
     return string
         .split(' ')
-        .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : '')
+        .map((word) =>
+            word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : '')
         .join(' ');
   }
 
@@ -184,13 +202,14 @@ class UtilHelper {
   }
 
   static bool isURL(String str) {
-    final pattern =
-        RegExp(r'^(http(s)?:\/\/)?(www\.)?[a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$');
+    final pattern = RegExp(
+        r'^(http(s)?:\/\/)?(www\.)?[a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$');
     return pattern.hasMatch(str);
   }
 
   static String formatDate(DateTime date, {String? format, required BuildContext context}) {
-    String formattedDate = DateFormat(format ?? 'dd MMMM yyyy', context.locale.languageCode).format(date);
+    String formattedDate =
+        DateFormat(format ?? 'dd MMMM yyyy', context.locale.languageCode).format(date);
     return formattedDate;
   }
 
