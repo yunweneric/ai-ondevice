@@ -55,16 +55,12 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
                               },
                               onPause: downloadInfo?.isDownloading == true
                                   ? () {
-                                      final modelKey =
-                                          '${model.name}_${model.modelVersion}_${model.modelType}';
-                                      bloc.add(CancelDownloadEvent(modelKey));
+                                      bloc.add(CancelDownloadEvent(model));
                                     }
                                   : null,
                               onDelete: downloadInfo?.isDownloading == true
                                   ? () {
-                                      final modelKey =
-                                          '${model.name}_${model.modelVersion}_${model.modelType}';
-                                      bloc.add(DeleteDownloadEvent(modelKey));
+                                      bloc.add(DeleteDownloadEvent(model));
                                     }
                                   : null,
                             ),
@@ -120,8 +116,7 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
-                final modelKey = '${model.name}_${model.modelVersion}_${model.modelType}';
-                bloc.add(CancelDownloadEvent(modelKey));
+                bloc.add(CancelDownloadEvent(model));
               },
               icon: const Icon(Icons.stop),
               label: const Text('Cancel Download'),
@@ -160,8 +155,7 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
           Expanded(
             child: OutlinedButton.icon(
               onPressed: () {
-                final modelKey = '${model.name}_${model.modelVersion}_${model.modelType}';
-                bloc.add(DeleteDownloadEvent(modelKey));
+                bloc.add(DeleteDownloadEvent(model));
               },
               icon: const Icon(Icons.delete),
               label: const Text('Delete'),
@@ -195,8 +189,7 @@ class _OnboardModelScreenState extends State<OnboardModelScreen> {
           Expanded(
             child: OutlinedButton.icon(
               onPressed: () {
-                final modelKey = '${model.name}_${model.modelVersion}_${model.modelType}';
-                bloc.add(DeleteDownloadEvent(modelKey));
+                bloc.add(DeleteDownloadEvent(model));
               },
               icon: const Icon(Icons.delete),
               label: const Text('Clear Error'),

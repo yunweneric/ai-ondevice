@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
 
@@ -134,7 +135,21 @@ class DownloadedModelCard extends StatelessWidget {
                   type: AppButtonType.dangerGhost,
                   size: AppButtonSize.small,
                   title: LangUtil.trans("models.remove_model"),
-                  onPressed: () {},
+                  onPressed: () {
+                    AppSheet.showActionSheet(
+                      title: LangUtil.trans("common.delete_model"),
+                      context: context,
+                      description: LangUtil.trans("common.delete_model_description"),
+                      onApprove: () {
+                        final modelDownloaderBloc = getIt.get<ModelDownloaderBloc>();
+                        modelDownloaderBloc.add(DeleteDownloadEvent(model.model));
+                        context.pop();
+                      },
+                      onReject: context.pop,
+                      approveText: LangUtil.trans("common.delete"),
+                      rejectText: LangUtil.trans("common.cancel"),
+                    );
+                  },
                   icon: AppIcon(
                     icon: AppIcons.trash,
                     color: theme.colorScheme.error,

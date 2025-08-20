@@ -24,22 +24,22 @@ final class StartDownloadEvent extends ModelDownloaderEvent {
 
 /// Event to cancel an ongoing download
 final class CancelDownloadEvent extends ModelDownloaderEvent {
-  final String modelKey;
+  final AiModel model;
 
-  const CancelDownloadEvent(this.modelKey);
+  const CancelDownloadEvent(this.model);
 
   @override
-  List<Object> get props => [modelKey];
+  List<Object> get props => [model];
 }
 
 /// Event to delete a completed download
 final class DeleteDownloadEvent extends ModelDownloaderEvent {
-  final String modelKey;
+  final AiModel model;
 
-  const DeleteDownloadEvent(this.modelKey);
+  const DeleteDownloadEvent(this.model);
 
   @override
-  List<Object> get props => [modelKey];
+  List<Object> get props => [model];
 }
 
 /// Event to delete an incomplete download

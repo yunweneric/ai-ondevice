@@ -112,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             ),
           ),
 
-          const AppLoader(),
+          AppLoader(color: theme.primaryColor),
           AppSizing.kh20Spacer(),
           AppSizing.kh20Spacer(),
           AppSizing.kh20Spacer(),

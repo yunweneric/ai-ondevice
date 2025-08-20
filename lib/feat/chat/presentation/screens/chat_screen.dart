@@ -72,6 +72,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _gemma.modelManager.deleteModel();
     super.dispose();
   }
 

@@ -22,8 +22,7 @@ Widget _buildModelActions(BuildContext context, AiModel model, DownloadInfo? dow
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () {
-              final modelKey = '${model.name}_${model.modelVersion}_${model.modelType}';
-              bloc.add(CancelDownloadEvent(modelKey));
+              bloc.add(CancelDownloadEvent(model));
             },
             icon: const Icon(Icons.stop),
             label: const Text('Cancel Download'),
@@ -62,8 +61,7 @@ Widget _buildModelActions(BuildContext context, AiModel model, DownloadInfo? dow
         Expanded(
           child: OutlinedButton.icon(
             onPressed: () {
-              final modelKey = '${model.name}_${model.modelVersion}_${model.modelType}';
-              bloc.add(DeleteDownloadEvent(modelKey));
+              bloc.add(DeleteDownloadEvent(model));
             },
             icon: const Icon(Icons.delete),
             label: const Text('Delete'),
@@ -97,8 +95,7 @@ Widget _buildModelActions(BuildContext context, AiModel model, DownloadInfo? dow
         Expanded(
           child: OutlinedButton.icon(
             onPressed: () {
-              final modelKey = '${model.name}_${model.modelVersion}_${model.modelType}';
-              bloc.add(DeleteDownloadEvent(modelKey));
+              bloc.add(DeleteDownloadEvent(model));
             },
             icon: const Icon(Icons.delete),
             label: const Text('Clear Error'),

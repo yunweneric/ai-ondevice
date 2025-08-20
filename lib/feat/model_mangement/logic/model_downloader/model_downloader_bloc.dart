@@ -153,7 +153,7 @@ class ModelDownloaderBloc extends HydratedBloc<ModelDownloaderEvent, ModelDownlo
     Emitter<ModelDownloaderState> emit,
   ) async {
     try {
-      final modelKey = event.modelKey;
+      final modelKey = _generateModelKey(event.model);
 
       if (!state.downloads.containsKey(modelKey)) {
         AppLogger.i('Download not found for cancellation: $modelKey');
@@ -193,7 +193,7 @@ class ModelDownloaderBloc extends HydratedBloc<ModelDownloaderEvent, ModelDownlo
     Emitter<ModelDownloaderState> emit,
   ) async {
     try {
-      final modelKey = event.modelKey;
+      final modelKey = _generateModelKey(event.model);
 
       if (!state.downloads.containsKey(modelKey)) {
         AppLogger.i('Download not found for deletion: $modelKey');

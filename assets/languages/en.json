@@ -65,7 +65,9 @@
     "just_now": "Just now",
     "minutes_ago": "m ago",
     "hours_ago": "h ago",
-    "days_ago": "d ago"
+    "days_ago": "d ago",
+    "delete_model": "Delete Model",
+    "delete_model_description": "This will permanently delete the model from your device. This action cannot be undone."
   },
   "chat": {
     "title": "Chat",
@@ -114,7 +116,8 @@
     "open_source_language": "Open source language model",
     "speech_recognition": "Speech recognition model",
     "downloaded": "Downloaded",
-    "completed": "Completed"
+    "completed": "Completed",
+    "remove_model": "Remove Model"
   },
   "onboarding": {
     "offline": "OFFLINE",

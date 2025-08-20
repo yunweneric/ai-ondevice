@@ -65,7 +65,9 @@
     "just_now": "À l'instant",
     "minutes_ago": "min",
     "hours_ago": "h",
-    "days_ago": "j"
+    "days_ago": "j",
+    "delete_model": "Supprimer le modèle",
+    "delete_model_description": "Cela supprimera définitivement le modèle de votre appareil. Cette action ne peut pas être annulée."
   },
   "chat": {
     "title": "Chat",
@@ -114,7 +116,8 @@
     "open_source_language": "Modèle de langage open source",
     "speech_recognition": "Modèle de reconnaissance vocale",
     "downloaded": "Téléchargé",
-    "completed": "Terminé"
+    "completed": "Terminé",
+    "remove_model": "Supprimer le modèle"
   },
   "onboarding": {
     "offline": "HORS LIGNE",
