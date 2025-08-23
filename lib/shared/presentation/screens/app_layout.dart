@@ -31,32 +31,39 @@ class _AppLayoutState extends State<AppLayout> {
   ];
   static List<NavItem> navBar() => [
         NavItem(
-            title: LangUtil.trans("navigation.chat"), iconFilled: AppIcons.chatFilled, icon: AppIcons.chat, index: 0),
+          title: LangUtil.trans("navigation.chat"),
+          iconFilled: AppIcons.chatFilled,
+          icon: AppIcons.chat,
+          index: 0,
+        ),
         NavItem(
-            title: LangUtil.trans("navigation.history"),
-            iconFilled: AppIcons.historyFilled,
-            icon: AppIcons.history,
-            index: 1),
+          title: LangUtil.trans("navigation.history"),
+          iconFilled: AppIcons.historyFilled,
+          icon: AppIcons.history,
+          index: 1,
+        ),
         NavItem(
-            title: LangUtil.trans("navigation.explore"),
-            iconFilled: AppIcons.exploreFilled,
-            icon: AppIcons.explore,
-            index: 2),
+          title: LangUtil.trans("navigation.explore"),
+          iconFilled: AppIcons.exploreFilled,
+          icon: AppIcons.explore,
+          index: 2,
+        ),
         NavItem(
-            title: LangUtil.trans("navigation.settings"),
-            iconFilled: AppIcons.settingsFilled,
-            icon: AppIcons.settings,
-            index: 3),
+          title: LangUtil.trans("navigation.settings"),
+          iconFilled: AppIcons.settingsFilled,
+          icon: AppIcons.settings,
+          index: 3,
+        ),
       ];
   final navBloc = getIt.get<BottomNavBarBloc>();
+  final fileManagementBloc = getIt.get<FileManagementBloc>();
 
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemBar.setNavBarColor(context: context);
     });
-
-    // LayoutFetch.findUser();
+    fileManagementBloc.add(LoadStorageInfoEvent());
     super.initState();
   }
 

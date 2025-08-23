@@ -1,6 +1,6 @@
 # Offline AI
 
-A Flutter mobile application that allows you to download and use AI models offline on your device. Interact with powerful AI models like Gemini Pro and UX Pilot without requiring an internet connection.
+A Flutter mobile application that allows you to download and use AI models offline on your device. Interact with powerful AI models like Gemma without requiring an internet connection.
 
 ## 🌟 Features
 
@@ -11,6 +11,35 @@ A Flutter mobile application that allows you to download and use AI models offli
 - **Model Management**: Easily manage, download, and switch between models
 - **Voice & Image Input**: Support for voice, image, and camera input methods
 - **Cross-Platform**: Available on iOS and Android
+
+## 📸 Screenshots
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="screenshots/offline_0.PNG" width="200" alt="Screenshot 1"/>
+      </td>
+      <td align="center">
+        <img src="screenshots/offline_1.PNG" width="200" alt="Screenshot 2"/>
+      </td>
+      <td align="center">
+        <img src="screenshots/offline_2.PNG" width="200" alt="Screenshot 3"/>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="screenshots/offline_3.PNG" width="200" alt="Screenshot 4"/>
+      </td>
+      <td align="center">
+        <img src="screenshots/offline_4.PNG" width="200" alt="Screenshot 5"/>
+      </td>
+      <td align="center">
+        <img src="screenshots/offline_5.PNG" width="200" alt="Screenshot 6"/>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ## 🚀 Getting Started
 
@@ -160,6 +189,27 @@ This project uses GitHub Actions for continuous integration and deployment:
 #### Workflow Files:
 - `.github/workflows/pull-request.yml` - PR checks and APK builds
 - `.github/workflows/release.yml` - Release APK builds
+
+## 📋 Implementation Status
+
+### ✅ Completed
+- **UI for Chat screen** - Complete chat interface with message display
+- **Model selections, settings, history, download model, model management** - Full UI implementation
+- **History and explore** - Navigation and screen layouts
+- **Language switcher** - Multi-language support with theme integration
+- **Theme switcher** - Light/dark mode toggle functionality
+
+### 🔄 In Progress
+- **Download models to device** - Core download functionality being implemented
+- **Model Management** - Backend logic for model operations
+
+### 🚧 Upcoming
+- **Implement chat functionality** - AI model integration and conversation logic
+- **Voice & Image Input** - Camera and microphone integration
+- **Model Performance Metrics** - Usage statistics and performance tracking
+- **Offline Model Updates** - Local model version management
+- **User Preferences** - Customizable app settings
+- **Backup/Restore** - Data persistence and recovery
 
 ## 📋 TODO
 

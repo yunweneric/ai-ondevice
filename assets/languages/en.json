@@ -5,6 +5,7 @@
     "dark_theme": "Dark Theme",
     "system_theme": "System Theme",
     "change_language": "Change Language",
+    "select_language": "Select your preferred language",
     "english": "English",
     "french": "French",
     "spanish": "Spanish",
@@ -59,7 +60,14 @@
     "view_all": "View All",
     "skip": "Skip",
     "active": "Active",
-    "select": "Select"
+    "select": "Select",
+    "selected": "Selected",
+    "just_now": "Just now",
+    "minutes_ago": "m ago",
+    "hours_ago": "h ago",
+    "days_ago": "d ago",
+    "delete_model": "Delete Model",
+    "delete_model_description": "This will permanently delete the model from your device. This action cannot be undone."
   },
   "chat": {
     "title": "Chat",
@@ -91,7 +99,7 @@
     "model_management": "Model Management",
     "available_models": "Available Models",
     "downloaded_models": "Downloaded Models",
-    "download_model": "Download Model",
+    "download_model": "Download",
     "remove_model": "Remove Model",
     "download_now": "Download Now",
     "model_size": "Model Size",
@@ -106,12 +114,15 @@
     "conversational_ai": "Conversational AI model",
     "image_generation": "Image generation model",
     "open_source_language": "Open source language model",
-    "speech_recognition": "Speech recognition model"
+    "speech_recognition": "Speech recognition model",
+    "downloaded": "Downloaded",
+    "completed": "Completed",
+    "remove_model": "Remove Model"
   },
   "onboarding": {
     "offline": "OFFLINE",
     "headline": "AI, Anytime, Anywhere",
-    "description": "With this app, you can download AI models like Gemini and UX Pilot directly to your device, and use them offline — no internet needed! Interact with the models anytime, even when you're on the go or in low-connectivity areas.",
+    "description": "With this app, you can download AI models like Gemma 3n directly to your device, and use them offline — no internet needed! Interact with the models anytime, even when you're on the go or in low-connectivity areas.",
     "use_ai_offline": "Use AI Offline",
     "use_ai_offline_desc": "Interact with powerful AI models without needing an internet connection.",
     "seamless_experience": "Seamless Experience",
@@ -131,7 +142,17 @@
     "delete_all_data": "Delete All Data",
     "delete_all_data_desc": "This will permanently delete all your data, including downloaded models and chat history. This action cannot be undone.",
     "clear_cache_button": "Clear Cache",
-    "delete_all_data_button": "Delete All Data"
+    "delete_all_data_button": "Delete All Data",
+    "app_version": "App Version",
+    "app_version_desc": "Current version of the application",
+    "version_info": "Version Information",
+    "build_number": "Build Number",
+    "release_date": "Release Date",
+    "changelog": "What's New",
+    "confirm_action": "Confirm Action",
+    "confirm_clear_cache": "Are you sure you want to clear the cache?",
+    "confirm_delete_data": "Are you sure you want to delete all data?",
+    "this_action_cannot_be_undone": "This action cannot be undone."
   },
   "storage": {
     "storage_overview": "Storage Overview",
@@ -172,5 +193,17 @@
     "continue": "Continue",
     "open_app_settings": "Open App Settings",
     "error_message": "An error occurred"
+  },
+  "webview": {
+    "loading": "Loading...",
+    "error_title": "Failed to Load",
+    "error_message": "Unable to load the page. Please check your internet connection and try again.",
+    "retry": "Retry"
+  },
+  "privacy_policy": {
+    "title": "Privacy Policy"
+  },
+  "terms_of_service": {
+    "title": "Terms of Service"
   }
 }

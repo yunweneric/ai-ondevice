@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Storage permissions for downloading and saving files -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -15,7 +16,8 @@
     <application
         android:label="offline_ai"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        >
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -44,6 +46,17 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    
+    <!-- OpenGL support for GPU acceleration with AI models -->
+    <uses-native-library
+        android:name="libOpenCL.so"
+        android:required="false"/>
+    <uses-native-library 
+        android:name="libOpenCL-car.so" 
+        android:required="false"/>
+    <uses-native-library 
+        android:name="libOpenCL-pixel.so" 
+        android:required="false"/>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

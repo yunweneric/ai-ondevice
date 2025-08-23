@@ -25,5 +25,13 @@ final appRouter = GoRouter(
       path: AppRouteNames.permission,
       builder: (context, state) => const PermissionScreen(),
     ),
+    UtilHelper.buildAnimatedRoute(
+      path: AppRouteNames.privacyPolicy,
+      builder: (context, state) => const PrivacyPolicyScreen(),
+    ),
+    UtilHelper.buildAnimatedRoute(
+      path: AppRouteNames.termsOfService,
+      builder: (context, state) => const TermsOfServiceScreen(),
+    ),
   ],
 );

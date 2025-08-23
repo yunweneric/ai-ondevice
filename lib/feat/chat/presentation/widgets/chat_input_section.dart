@@ -5,7 +5,7 @@ import 'input_option.dart';
 
 class ChatInputSection extends StatefulWidget {
   final TextEditingController messageController;
-  final VoidCallback? onSendMessage;
+  final Function(String)? onSendMessage;
 
   const ChatInputSection({
     super.key,
@@ -17,8 +17,7 @@ class ChatInputSection extends StatefulWidget {
   State<ChatInputSection> createState() => _ChatInputSectionState();
 }
 
-class _ChatInputSectionState extends State<ChatInputSection>
-    with TickerProviderStateMixin {
+class _ChatInputSectionState extends State<ChatInputSection> with TickerProviderStateMixin {
   late AnimationController _optionsAnimationController;
   late Animation<double> _optionsAnimation;
   bool _showOptions = false;
@@ -135,7 +134,7 @@ class _ChatInputSectionState extends State<ChatInputSection>
                   onPressed: () {
                     // Handle send message
                     if (widget.messageController.text.trim().isNotEmpty) {
-                      widget.onSendMessage?.call();
+                      widget.onSendMessage?.call(widget.messageController.text);
                       widget.messageController.clear();
                     }
                   },
@@ -192,4 +191,4 @@ class _ChatInputSectionState extends State<ChatInputSection>
       ),
     );
   }
-} 
+}
