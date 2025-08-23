@@ -39,8 +39,9 @@ class _ApplicationState extends State<Application> {
         BlocProvider(create: (_) => getIt.get<ThemeBloc>()),
         BlocProvider(create: (_) => getIt.get<BottomNavBarBloc>()),
         BlocProvider(create: (_) => getIt.get<LanguageBloc>()),
-        BlocProvider(create: (_) => getIt.get<ModelDownloadBloc>()),
         BlocProvider(create: (_) => getIt.get<PermissionBloc>()..add(const CheckPermissions())),
+        BlocProvider(create: (_) => getIt.get<ModelDownloaderBloc>()),
+        BlocProvider(create: (_) => getIt.get<FileManagementBloc>()),
       ],
       child: LayoutBuilder(
         builder: (context, constraints) {

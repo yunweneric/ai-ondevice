@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:offline_ai/shared/shared.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -85,7 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Navigate to storage details
             },
             onClearCacheTap: () {
-              _showClearCacheDialog();
+              _showClearCacheSheet();
             },
           ),
 
@@ -95,13 +96,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SettingsAboutSection(
             appVersion: 'v1.0.0',
             onAppVersionTap: () {
-              // Show version info
+              _showAppVersionSheet();
             },
             onPrivacyPolicyTap: () {
-              // Navigate to privacy policy
+              context.push(AppRouteNames.privacyPolicy);
             },
             onTermsOfServiceTap: () {
-              // Navigate to terms of service
+              context.push(AppRouteNames.termsOfService);
             },
           ),
 
@@ -110,7 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // Danger Zone
           SettingsDangerZoneSection(
             onDeleteAllDataTap: () {
-              _showDeleteDataDialog();
+              _showDeleteDataSheet();
             },
           ),
 
@@ -120,26 +121,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showClearCacheDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => ClearCacheDialog(
-        cacheSize: '2.3 GB',
-        onClearCache: () {
-          // Handle clear cache
-        },
-      ),
+  void _showClearCacheSheet() {
+    AppSheet.showClearCacheSheet(
+      context,
+      cacheSize: '2.3 GB',
+      onClearCache: () {
+        // Handle clear cache
+        AppLogger.i('Cache cleared');
+      },
     );
   }
 
-  void _showDeleteDataDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => DeleteDataDialog(
-        onDeleteData: () {
-          // Handle delete all data
-        },
-      ),
+  void _showAppVersionSheet() {
+    AppSheet.showAppVersionSheet(
+      context,
+      appVersion: 'v1.0.0',
+    );
+  }
+
+  void _showDeleteDataSheet() {
+    AppSheet.showDeleteDataSheet(
+      context,
+      onDeleteData: () {
+        // Handle delete all data
+        AppLogger.i('All data deleted');
+      },
     );
   }
 }
@@ -199,10 +205,6 @@ class SettingsCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.cardColor,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: theme.primaryColor.withValues(alpha: 0.1),
-            width: 1,
-          ),
         ),
         child: Row(
           children: [

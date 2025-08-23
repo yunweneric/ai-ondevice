@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gemma/core/model.dart';
+import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_gemma/pigeon.g.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
 import '../widgets/chat_header.dart';
 import '../widgets/chat_message.dart';
@@ -15,17 +19,67 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final _gemma = FlutterGemmaPlugin.instance;
+
+  ChatService? chatService;
+
+  Future<void> initializeModel() async {
+    try {
+      final modelDownloaderBloc = getIt.get<ModelDownloaderBloc>();
+      final selectedModel = modelDownloaderBloc.state.selectedModel;
+      if (selectedModel == null) return;
+
+      AppLogger.i('Selected model: ${selectedModel.model.toMap()}');
+
+      if (!await _gemma.modelManager.isModelInstalled) {
+        final path = selectedModel.model.path;
+        await _gemma.modelManager.setModelPath(path);
+      }
+
+      final model = await _gemma.createModel(
+        modelType: ModelType.gemmaIt,
+        preferredBackend: PreferredBackend.cpu,
+        maxTokens: 1024,
+        supportImage: false, // Pass image support
+      );
+
+      final chat = await model.createChat(
+        temperature: 0.7,
+        randomSeed: 1,
+        topK: 40,
+        topP: 0.95,
+        tokenBuffer: 256,
+        supportImage: false, // Image support in chat
+        supportsFunctionCalls: false, // Function calls support from model
+        tools: [], // Pass the tools to the chat
+        isThinking: false, // Pass isThinking from model
+        modelType: ModelType.gemmaIt, // Pass modelType from model
+      );
+
+      chatService = ChatService(chat: chat);
+    } catch (e) {
+      AppLogger.e('Error initializing model: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initializeModel();
+  }
 
   @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _gemma.modelManager.deleteModel();
     super.dispose();
   }
 
-  void _handleSendMessage() {
+  void _handleSendMessage(String message) {
     // Handle send message logic here
     // You can add your message sending logic
+    chatService?.addQuery(Message(text: message));
   }
 
   @override
@@ -68,7 +122,8 @@ class _ChatScreenState extends State<ChatScreen> {
               color: theme.cardColor,
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Text('${LangUtil.trans("chat.today")}, 9:41 AM', style: theme.textTheme.bodySmall),
+            child:
+                Text('${LangUtil.trans("chat.today")}, 9:41 AM', style: theme.textTheme.bodySmall),
           ),
         ),
 

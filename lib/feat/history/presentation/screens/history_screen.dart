@@ -18,16 +18,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
         title: Text(LangUtil.trans("chat.chat_history")),
         actions: [
           IconButton(
-            onPressed: () {
-              // Handle search
-            },
+            onPressed: () {},
             icon: const Icon(Icons.search),
-          ),
-          IconButton(
-            onPressed: () {
-              // Handle settings
-            },
-            icon: const Icon(Icons.settings),
           ),
         ],
       ),

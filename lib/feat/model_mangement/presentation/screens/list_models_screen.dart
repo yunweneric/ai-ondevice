@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
-import '../widgets/storage_overview.dart';
-import '../widgets/model_list_section.dart';
-import '../widgets/downloaded_model_card.dart';
-import '../widgets/available_model_card.dart';
 
 class ListModelsScreen extends StatefulWidget {
   const ListModelsScreen({super.key});
@@ -13,6 +11,14 @@ class ListModelsScreen extends StatefulWidget {
 }
 
 class _ListModelsScreenState extends State<ListModelsScreen> {
+  final bloc = getIt.get<ModelDownloaderBloc>();
+
+  @override
+  void initState() {
+    super.initState();
+    bloc.add(const LoadDownloadsEvent());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,73 +45,82 @@ class ModelManagementContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return ListView(
-      padding: AppSizing.kMainPadding(context),
-      children: [
-        // Storage Overview Section
-        const StorageOverview(),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Storage Overview Section
+          Padding(
+            padding: AppSizing.kMainPadding(context),
+            child: const StorageOverview(),
+          ),
+          AppSizing.kh20Spacer(),
+          BlocBuilder<ModelDownloaderBloc, ModelDownloaderState>(
+            builder: (context, state) {
+              final selectedModel = state.selectedModel;
+              final downloadedModels = state.downloads.values
+                  .where((download) => download.status == DownloadStatus.complete)
+                  .toList();
 
-        AppSizing.kh20Spacer(),
+              final downloadingModels = state.downloads.values
+                  .where((download) => download.status == DownloadStatus.downloading)
+                  .toList();
 
-        // Downloaded Models Section
-        ModelListSection(
-          title: LangUtil.trans("models.downloaded_models"),
-          subtitle: LangUtil.trans("models.models_count"),
-          models: [
-            DownloadedModel(
-              name: LangUtil.trans("models.gemini_pro"),
-              description: LangUtil.trans("models.general_purpose"),
-              details: '1.5 GB • v1.0.2',
-              icon: Icons.smart_toy,
-              iconColor: theme.primaryColor,
-              isActive: true,
-              isSelected: true,
-            ),
-            DownloadedModel(
-              name: LangUtil.trans("models.ux_pilot"),
-              description: LangUtil.trans("models.conversational_ai"),
-              details: '2.3 GB • v3.5.0',
-              icon: Icons.chat_bubble_outline,
-              iconColor: theme.primaryColor,
-              isActive: false,
-              isSelected: false,
-            ),
-            DownloadedModel(
-              name: LangUtil.trans("models.stable_diffusion"),
-              description: LangUtil.trans("models.image_generation"),
-              details: '3.7 GB • v1.2.1',
-              icon: Icons.brush,
-              iconColor: theme.primaryColor,
-              isActive: false,
-              isSelected: false,
-            ),
-          ],
-        ),
+              final availableModels = AllAiModels.models
+                  .where((model) => !downloadedModels
+                      .any((downloadedModel) => downloadedModel.model.id == model.id))
+                  .where((model) => !downloadingModels
+                      .any((downloadingModel) => downloadingModel.model.id == model.id))
+                  .toList();
 
-        AppSizing.kh20Spacer(),
+              return ListView(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                padding: AppSizing.kMainPadding(context),
+                children: [
+                  AppSizing.kh20Spacer(),
+                  // Available to Download Section
+                  if (downloadingModels.isNotEmpty)
+                    ModelListSection(
+                      title: LangUtil.trans("models.in_progress"),
+                      subtitle: LangUtil.trans("common.view_all"),
+                      models: downloadingModels,
+                      builder: (model) => ModelDownloadingCard(downloadInfo: model),
+                    ),
+                  AppSizing.kh20Spacer(),
+                  // Downloaded Models Section
+                  if (downloadedModels.isNotEmpty)
+                    ModelListSection(
+                      title: LangUtil.trans("models.downloaded_models"),
+                      subtitle: LangUtil.trans("models.clear_all"),
+                      onTapSubtitle: () {
+                        final modelDownloaderBloc = getIt.get<ModelDownloaderBloc>();
+                        modelDownloaderBloc.add(const ClearDownloadsEvent());
+                      },
+                      models: downloadedModels,
+                      builder: (model) => DownloadedModelCard(
+                        model: model,
+                        isActive: selectedModel?.model.id == model.model.id,
+                      ),
+                    ),
 
-        // Available to Download Section
-        ModelListSection(
-          title: LangUtil.trans("models.available_models"),
-          subtitle: LangUtil.trans("common.view_all"),
-          models: [
-            AvailableModel(
-              name: LangUtil.trans("models.llama_2"),
-              description: LangUtil.trans("models.open_source_language"),
-              details: '4.2 GB • v2.0.0',
-              icon: Icons.psychology,
-              iconColor: theme.primaryColor,
-            ),
-            AvailableModel(
-              name: LangUtil.trans("models.whisper_small"),
-              description: LangUtil.trans("models.speech_recognition"),
-              details: '0.9 GB • v1.1.0',
-              icon: Icons.mic,
-              iconColor: theme.primaryColor,
-            ),
-          ],
-        ),
-      ],
+                  AppSizing.kh20Spacer(),
+
+                  // Available to Download Section
+
+                  ModelListSection(
+                    title: LangUtil.trans("models.available_models"),
+                    subtitle: LangUtil.trans("common.view_all"),
+                    models: availableModels,
+                    builder: (model) => AvailableModelCard(model: model),
+                  ),
+
+                  AppSizing.khSpacer(AppSizing.kHPercentage(context, 10)),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

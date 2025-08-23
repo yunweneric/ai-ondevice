@@ -47,10 +47,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.smart_toy,
-                            color: theme.primaryColor,
+                          AppIcon(
+                            icon: AppIcons.robotHead,
                             size: 40.w,
+                            color: theme.primaryColor,
                           ),
                           SizedBox(height: 8.h),
                           Text(
@@ -113,14 +113,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               // Bottom Button
               AppButton(
-                onPressed: () {
-                  context.go(AppRouteNames.permission);
-
-                  // if (getIt.get<PermissionBloc>().state.allPermissionsGranted) {
-                  //   context.go(AppRouteNames.permission);
-                  // } else {
-                  //   context.go(AppRouteNames.permission);
-                  // }
+                onPressed: () async {
+                  final localStorageService = getIt.get<LocalStorageService>();
+                  await localStorageService.saveInit();
+                  if (context.mounted) {
+                    context.go(AppRouteNames.permission);
+                  }
                 },
                 title: LangUtil.trans("common.get_started"),
               ),

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
 
 class DownloadedModelCard extends StatelessWidget {
-  final DownloadedModel model;
+  final DownloadInfo model;
+  final bool isActive;
 
-  const DownloadedModelCard({
-    super.key,
-    required this.model,
-  });
+  const DownloadedModelCard({super.key, required this.model, this.isActive = false});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class DownloadedModelCard extends StatelessWidget {
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: theme.dividerColor ?? Colors.grey.withValues(alpha: 0.2),
+          color: theme.dividerColor,
           width: 1,
         ),
       ),
@@ -33,8 +33,15 @@ class DownloadedModelCard extends StatelessWidget {
               Container(
                 width: 48.w,
                 height: 48.w,
-                decoration: BoxDecoration(color: model.iconColor, shape: BoxShape.circle),
-                child: Icon(model.icon, color: Colors.white, size: 24.w),
+                decoration: BoxDecoration(
+                  color: theme.primaryColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.smart_toy,
+                  color: Colors.white,
+                  size: 24.w,
+                ),
               ),
 
               AppSizing.kwSpacer(12.w),
@@ -48,13 +55,13 @@ class DownloadedModelCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            model.name,
+                            model.model.name,
                             style: theme.textTheme.displaySmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                        if (model.isActive)
+                        if (isActive) ...[
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                             decoration: BoxDecoration(
@@ -69,21 +76,33 @@ class DownloadedModelCard extends StatelessWidget {
                               ),
                             ),
                           ),
+                        ],
                       ],
                     ),
                     AppSizing.khSpacer(4.h),
                     Text(
-                      model.description,
+                      '${model.model.modelType} • ${model.model.size}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.8),
                       ),
                     ),
                     AppSizing.khSpacer(4.h),
-                    Text(
-                      model.details,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
-                      ),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 16,
+                        ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          LangUtil.trans("models.downloaded"),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.green,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -91,7 +110,7 @@ class DownloadedModelCard extends StatelessWidget {
             ],
           ),
 
-          AppSizing.khSpacer(12.h),
+          AppSizing.khSpacer(16.h),
 
           // Action Buttons
           Row(
@@ -99,9 +118,15 @@ class DownloadedModelCard extends StatelessWidget {
               Expanded(
                 child: AppButton(
                   size: AppButtonSize.small,
-                  title: LangUtil.trans("common.select"),
-                  onPressed: () {},
-                  icon: Icon(Icons.check, color: Colors.white, size: 16.w),
+                  title: LangUtil.trans(isActive ? "common.selected" : "common.select"),
+                  onPressed: () {
+                    AppLogger.i('model: ${model.model.name}');
+                  },
+                  icon: Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 16.w,
+                  ),
                 ),
               ),
               AppSizing.kwSpacer(12.w),
@@ -110,34 +135,69 @@ class DownloadedModelCard extends StatelessWidget {
                   type: AppButtonType.dangerGhost,
                   size: AppButtonSize.small,
                   title: LangUtil.trans("models.remove_model"),
-                  onPressed: () {},
-                  icon: AppIcon(icon: AppIcons.trash, color: theme.colorScheme.error),
+                  onPressed: () {
+                    AppSheet.showActionSheet(
+                      title: LangUtil.trans("common.delete_model"),
+                      context: context,
+                      description: LangUtil.trans("common.delete_model_description"),
+                      onApprove: () {
+                        final modelDownloaderBloc = getIt.get<ModelDownloaderBloc>();
+                        modelDownloaderBloc.add(DeleteDownloadEvent(model.model));
+                        context.pop();
+                      },
+                      onReject: context.pop,
+                      approveText: LangUtil.trans("common.delete"),
+                      rejectText: LangUtil.trans("common.cancel"),
+                    );
+                  },
+                  icon: AppIcon(
+                    icon: AppIcons.trash,
+                    color: theme.colorScheme.error,
+                  ),
                 ),
               ),
             ],
           ),
+
+          // Download Info
+          if (model.completedTime != null) ...[
+            AppSizing.khSpacer(12.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.download_done,
+                  color: Colors.green,
+                  size: 14.w,
+                ),
+                SizedBox(width: 4.w),
+                Text(
+                  '${LangUtil.trans("models.completed")}: ${_formatTime(model.completedTime!)}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
   }
-}
 
-class DownloadedModel {
-  final String name;
-  final String description;
-  final String details;
-  final IconData icon;
-  final Color iconColor;
-  final bool isActive;
-  final bool isSelected;
+  /// Format DateTime to readable string
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final difference = now.difference(time);
 
-  const DownloadedModel({
-    required this.name,
-    required this.description,
-    required this.details,
-    required this.icon,
-    required this.iconColor,
-    required this.isActive,
-    required this.isSelected,
-  });
+    if (difference.inMinutes < 1) {
+      return LangUtil.trans("common.just_now");
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}${LangUtil.trans("common.minutes_ago")}';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}${LangUtil.trans("common.hours_ago")}';
+    } else {
+      return '${difference.inDays}${LangUtil.trans("common.days_ago")}';
+    }
+  }
 }

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
-import 'downloaded_model_card.dart';
-import 'available_model_card.dart';
 
 class ModelListSection extends StatelessWidget {
   final String title;
   final String subtitle;
   final List<dynamic> models;
-
+  final VoidCallback? onTapSubtitle;
+  final Widget Function(dynamic model) builder;
   const ModelListSection({
     super.key,
     required this.title,
     required this.subtitle,
     required this.models,
+    this.onTapSubtitle,
+    required this.builder,
   });
 
   @override
@@ -31,23 +33,19 @@ class ModelListSection extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              subtitle,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.primaryColor,
+            GestureDetector(
+              onTap: onTapSubtitle,
+              child: Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.primaryColor,
+                ),
               ),
             ),
           ],
         ),
         AppSizing.kh10Spacer(),
-        ...models.map((model) {
-          if (model is DownloadedModel) {
-            return DownloadedModelCard(model: model);
-          } else if (model is AvailableModel) {
-            return AvailableModelCard(model: model);
-          }
-          return const SizedBox.shrink();
-        }),
+        ...models.map(builder),
       ],
     );
   }

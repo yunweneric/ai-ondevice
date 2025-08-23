@@ -2,7 +2,7 @@ name: offline_ai
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -34,12 +34,13 @@ dependencies:
   disk_space_plus: ^0.2.4
   easy_localization: ^3.0.8
   equatable: ^2.0.7
+  file: ^7.0.1
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
-  flutter_downloader: ^1.12.0
   flutter_gemma: ^0.10.2
   flutter_local_notifications: ^19.4.0
+  flutter_markdown: ^0.7.7+1
   flutter_screenutil: ^5.9.3
   flutter_svg: ^2.2.0
   get_it: ^8.1.0
@@ -51,8 +52,12 @@ dependencies:
   modal_bottom_sheet: ^3.0.0
   path_provider: ^2.1.2
   permission_handler: ^12.0.1
+  shared_preferences: ^2.5.3
+  shimmer: ^3.0.0
+  storage_space: ^1.2.0
   upgrader: ^11.4.0
   url_launcher: ^6.3.2
+  webview_flutter: ^4.7.0
 
 dev_dependencies:
   flutter_lints: ^4.0.0
@@ -63,7 +68,6 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
