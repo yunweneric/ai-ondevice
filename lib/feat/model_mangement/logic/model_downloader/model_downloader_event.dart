@@ -108,9 +108,17 @@ final class CheckDownloadStatusEvent extends ModelDownloaderEvent {
   List<Object> get props => [modelKey];
 }
 
+/// Event to clear all downloads
 final class ClearDownloadsEvent extends ModelDownloaderEvent {
   const ClearDownloadsEvent();
+}
+
+/// Event to select a model for use
+final class SelectModelEvent extends ModelDownloaderEvent {
+  final AiModel model;
+
+  const SelectModelEvent({required this.model});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [model];
 }

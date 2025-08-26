@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:offline_ai/feat/model_mangement/model_management.dart';
 import 'package:offline_ai/shared/shared.dart';
 
 class ChatHeader extends StatelessWidget {
-  const ChatHeader({super.key});
+  final DownloadInfo? selectedModel;
+  final VoidCallback? onRefresh;
+  final VoidCallback? onChangeModel;
+
+  const ChatHeader({
+    super.key,
+    this.selectedModel,
+    this.onRefresh,
+    this.onChangeModel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -48,20 +58,30 @@ class ChatHeader extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      LangUtil.trans("models.gemini_pro"),
+                      selectedModel?.model.name ?? 'No Model Selected',
                       style: theme.textTheme.bodyMedium,
                     ),
                     AppSizing.kwSpacer(8.w),
-                    Container(
-                      width: 8.w,
-                      height: 8.w,
-                      decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle),
-                    ),
-                    AppSizing.kwSpacer(4.w),
-                    Text(
-                      LangUtil.trans("onboarding.offline"),
-                      style: theme.textTheme.bodySmall,
-                    ),
+                    if (selectedModel != null) ...[
+                      Container(
+                        width: 8.w,
+                        height: 8.w,
+                        decoration:
+                            const BoxDecoration(color: AppColors.success, shape: BoxShape.circle),
+                      ),
+                      AppSizing.kwSpacer(4.w),
+                      Text(
+                        LangUtil.trans("onboarding.offline"),
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ] else ...[
+                      Text(
+                        'Select a model to start',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -71,16 +91,27 @@ class ChatHeader extends StatelessWidget {
           // Action Icons
           Row(
             children: [
-              IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.refresh,
-                  color: AppColors.textGrey,
-                  size: 20.w,
+              if (selectedModel != null) ...[
+                IconButton(
+                  onPressed: onRefresh,
+                  icon: Icon(
+                    Icons.refresh,
+                    color: AppColors.textGrey,
+                    size: 20.w,
+                  ),
                 ),
-              ),
+                IconButton(
+                  onPressed: onChangeModel,
+                  icon: Icon(
+                    Icons.swap_horiz,
+                    color: AppColors.textGrey,
+                    size: 20.w,
+                  ),
+                ),
+              ],
               IconButton(
-                onPressed: () => getIt.get<BottomNavBarBloc>().add(UpdateNavbarIndexEvent(newIndex: 3)),
+                onPressed: () =>
+                    getIt.get<BottomNavBarBloc>().add(UpdateNavbarIndexEvent(newIndex: 3)),
                 icon: Icon(
                   Icons.settings,
                   color: AppColors.textGrey,

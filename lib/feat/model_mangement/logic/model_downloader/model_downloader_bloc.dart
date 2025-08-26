@@ -28,6 +28,7 @@ class ModelDownloaderBloc extends HydratedBloc<ModelDownloaderEvent, ModelDownlo
     on<DownloadErrorEvent>(_onDownloadError);
     on<CheckDownloadStatusEvent>(_onCheckDownloadStatus);
     on<ClearDownloadsEvent>(_onClearDownloads);
+    on<SelectModelEvent>(_onSelectModel);
   }
 
   Future<void> _onLoadDownloads(
@@ -448,6 +449,43 @@ class ModelDownloaderBloc extends HydratedBloc<ModelDownloaderEvent, ModelDownlo
   bool hasIncompleteDownload(AiModel model) {
     final downloadInfo = getDownloadInfo(model);
     return downloadInfo?.status == DownloadStatus.incomplete;
+  }
+
+  /// Select a model for use
+  void selectModel(AiModel model) {
+    add(SelectModelEvent(model: model));
+  }
+
+  Future<void> _onSelectModel(
+    SelectModelEvent event,
+    Emitter<ModelDownloaderState> emit,
+  ) async {
+    try {
+      // Check if the model is downloaded
+      if (!isModelDownloaded(event.model)) {
+        AppLogger.i('Cannot select model ${event.model.name} - not downloaded yet');
+        return;
+      }
+
+      // Get the download info for the selected model
+      final downloadInfo = getDownloadInfo(event.model);
+      if (downloadInfo == null) {
+        AppLogger.i('Download info not found for model ${event.model.name}');
+        return;
+      }
+
+      // Update the selected model
+      emit(ModelDownloaderLoaded(
+        downloads: state.downloads,
+        totalDownloads: state.totalDownloads,
+        activeDownloads: state.activeDownloads,
+        selectedModel: downloadInfo,
+      ));
+
+      AppLogger.i('Model ${event.model.name} selected successfully');
+    } catch (e) {
+      AppLogger.e('Error selecting model: $e');
+    }
   }
 
   Future<void> _onClearDownloads(
