@@ -1,4 +1,4 @@
-# Offline AI
+# OnDevice AI
 
 A Flutter mobile application that allows you to download and use AI models offline on your device. Interact with powerful AI models like Gemma without requiring an internet connection.
 
